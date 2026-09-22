@@ -22,7 +22,13 @@ export async function POST(req) {
     return NextResponse.json({ error: "No autorizado" }, { status: 403 });
   }
 
-  const body = await req.json();
+  let body;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
+  }
+
   const nombre = (body?.nombre ?? "").trim();
   const password = body?.password ?? "";
   const role = body?.role ?? "user";
@@ -32,6 +38,10 @@ export async function POST(req) {
       { error: "Nombre y contraseña requeridos" },
       { status: 400 },
     );
+  }
+
+  if (role !== "user" && role !== "admin") {
+    return NextResponse.json({ error: "role inválido" }, { status: 400 });
   }
 
   const hash = await hashPassword(password);

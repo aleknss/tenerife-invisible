@@ -29,4 +29,13 @@ if (error) {
   process.exit(1);
 }
 
+// Asegura la fila única de configuración del evento.
+const { error: cfgError } = await supabase
+  .from("config")
+  .upsert({ id: 1 }, { onConflict: "id", ignoreDuplicates: true });
+if (cfgError) {
+  console.error("Error config:", cfgError.message);
+  process.exit(1);
+}
+
 console.log("Admin listo:", data);

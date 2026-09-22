@@ -1,3 +1,5 @@
+"use client";
+
 // Client-only. libsodium: keypair X25519 + sealed box.
 import _sodium from "libsodium-wrappers-sumo";
 

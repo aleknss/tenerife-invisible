@@ -7,6 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
+    "test": "node --test \"tests/**/*.test.mjs\"",
+    "test:e2e": "node --env-file=.env.local --test \"tests/**/*.integration.mjs\"",
     "seed": "node --env-file=.env.local scripts/seed.mjs"
   },
   "dependencies": {

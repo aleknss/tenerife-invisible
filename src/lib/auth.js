@@ -2,6 +2,7 @@
 import bcrypt from "bcryptjs";
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { getUserById } from "./db";
 
 const COOKIE_NAME = "session";
 
@@ -20,7 +21,7 @@ export async function verifyPassword(password, hash) {
 }
 
 export async function signSession(user) {
-  return new SignJWT({ nombre: user.nombre, role: user.role })
+  return new SignJWT({ nombre: user.nombre, role: user.role, tv: user.token_version ?? 0 })
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(user.id)
     .setIssuedAt()
@@ -60,8 +61,13 @@ export async function clearSessionCookie() {
   });
 }
 
-// Devuelve { sub, nombre, role } o null.
+// Devuelve { sub, nombre, role } o null. Revalida rol y token_version contra la BD.
 export async function getSession(req) {
   const token = req.cookies.get(COOKIE_NAME)?.value;
-  return verifyToken(token);
+  const payload = await verifyToken(token);
+  if (!payload) return null;
+  const user = await getUserById(payload.sub);
+  if (!user) return null;
+  if ((user.token_version ?? 0) !== (payload.tv ?? 0)) return null;
+  return { sub: payload.sub, nombre: user.nombre, role: user.role };
 }

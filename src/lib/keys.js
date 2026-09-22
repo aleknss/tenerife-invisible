@@ -1,3 +1,5 @@
+"use client";
+
 // Client-only. privateKey en IndexedDB, nunca sale del dispositivo.
 import { generateKeypair, publicKeyFromPrivate } from "./crypto";
 

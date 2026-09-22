@@ -13,5 +13,13 @@ export async function GET(req) {
     return NextResponse.json({ error: "Usuario no encontrado" }, { status: 404 });
   }
 
-  return NextResponse.json(user);
+  const { id, nombre, role, public_key, usuario_asignado, viewed_at } = user;
+  return NextResponse.json({
+    id,
+    nombre,
+    role,
+    public_key,
+    usuario_asignado,
+    viewed_at,
+  });
 }

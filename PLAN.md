@@ -19,6 +19,7 @@ Aplicación web de "amigo invisible" para un grupo fijo de usuarios.
 | Frontend | Next.js 16 (App Router), JavaScript | Ya montado |
 | Base de datos | Supabase (solo Postgres) | Postgres gestionado |
 | Acceso a BD | Service role, solo servidor | El cliente nunca habla con Supabase |
+| RLS | Activo, sin políticas | `anon`/`authenticated` denegados; solo `service_role` |
 | Auth | Propia: bcrypt + JWT en cookie httpOnly | Sin email, sin Supabase Auth |
 | Cifrado | ECIES con keypair X25519 por dispositivo (`crypto_box_seal`) | El servidor solo guarda ciphertext |
 | Clave privada | IndexedDB del dispositivo | Nunca sale del navegador |
@@ -27,9 +28,9 @@ Aplicación web de "amigo invisible" para un grupo fijo de usuarios.
 | Directo | Polling cada 2-3 s | Sin Realtime, más simple |
 | Deploy | Vercel | Serverless |
 
-### Por qué no Supabase Auth ni RLS ni Realtime
+### Por qué no Supabase Auth ni Realtime
 
-La autenticación es propia (bcrypt + JWT), así que no se usa `auth.users` ni las políticas RLS. Todo el acceso a la base de datos pasa por API routes del servidor, que usan la service role. El cliente no tiene la anon key. La animación "en directo" se resuelve con polling, no con Realtime.
+La autenticación es propia (bcrypt + JWT), así que no se usa `auth.users` ni Supabase Auth. RLS está activo pero **sin políticas**: `anon`/`authenticated` quedan denegados y todo el acceso pasa por API routes del servidor con la service role. El cliente no tiene la anon key. La animación "en directo" se resuelve con polling, no con Realtime.
 
 ## 3. Modelo de datos
 
@@ -41,9 +42,17 @@ create table usuario (
   nombre text not null unique,
   password_hash text not null,
   public_key text,          -- base64, 32 bytes, null hasta el primer login
-  role text not null default 'user',   -- 'user' | 'admin'
+  role text not null default 'user',   -- 'user' | 'admin', con constraint
   usuario_asignado text,    -- base64 ciphertext (sealed box), null hasta el sorteo
   viewed_at timestamptz,    -- null hasta que ve la animación
+  token_version integer not null default 0,   -- subirla revoca las sesiones
+  created_at timestamptz not null default now()
+);
+
+create table login_attempt (
+  id bigint generated always as identity primary key,
+  nombre text not null,
+  ip text not null,
   created_at timestamptz not null default now()
 );
 ```
@@ -53,12 +62,17 @@ Notas:
 - `public_key` es la clave pública X25519 (32 bytes, en base64). La sube el cliente en el primer login.
 - `usuario_asignado` es el resultado de `crypto_box_seal(uuid_asignado, public_key_destinatario)`. Solo ese usuario puede abrirlo con su clave privada.
 - No hay columna de asignado en claro. El mapping no se persiste en ningún sitio.
+- `login_attempt` guarda los fallos de login para el rate limit; índice `(nombre, ip, created_at)`.
+- `token_version` permite revocar sesiones: subir el valor invalida los JWT ya emitidos.
+- RLS activo y sin políticas: `anon`/`authenticated` denegados, `service_role` bypassa. El schema es idempotente y re-ejecutable.
 
 ## 4. Autenticación
 
 - Contraseña hasheada con bcrypt (coste 10).
-- Al iniciar sesión, el servidor firma un JWT (HS256) con `{ sub: id, nombre, role }` y lo guarda en una cookie httpOnly, con `secure` en producción y caducidad de 7 días.
-- El middleware protege `/admin` (solo role admin) y `/reveal` (cualquier autenticado).
+- Al iniciar sesión, el servidor firma un JWT (HS256) con `{ sub: id, nombre, role, tv }` y lo guarda en una cookie httpOnly, con `secure` en producción y caducidad de 7 días. `tv` es `token_version`.
+- `getSession` revalida contra la BD en cada petición: usuario existente y `token_version` coincidente. Devuelve el rol fresco, así un cambio de rol o una revocación surten efecto sin esperar a que caduque el token.
+- Rate limit de login: 5 intentos / 15 min por (nombre, IP) → 429.
+- El middleware (pendiente) protegerá `/admin` (solo role admin) y `/reveal` (cualquier autenticado).
 - Cada API route verifica el JWT, salvo `login`.
 
 ## 5. Flujos de cifrado
@@ -95,6 +109,8 @@ nombre   = resolver uuid -> nombre en la lista de usuarios
 
 `privateKey` vive en IndexedDB y no se sincroniza. Si el usuario cambia de dispositivo o borra datos del navegador, pierde acceso a su asignado. Solución: el admin re-sortea. Coste aceptado para un evento de grupo pequeño.
 
+Para evitar sobrescribir la clave sin querer, `POST /api/me/public-key` responde 409 si ya existe una clave distinta; hay que enviar `force: true` para reemplazarla (y se pierde el asignado cifrado con la anterior).
+
 ## 6. API
 
 | Método | Ruta | Acceso | Descripción |
@@ -107,6 +123,8 @@ nombre   = resolver uuid -> nombre en la lista de usuarios
 | GET | `/api/users` | autenticado | Usuario: id + nombre. Admin: id + nombre + public_key |
 | POST | `/api/users` | admin | Crea usuario (nombre + contraseña) |
 | POST | `/api/randomize` | admin | Persiste los ciphertext y resetea `viewed_at` |
+
+Notas: `/api/login` limita a 5 intentos/15 min por (nombre, IP). `/api/me/public-key` valida base64/32 bytes y responde 409 ante una clave distinta sin `force`. `/api/randomize` exige cobertura total, sin `user_id` duplicados y con `public_key` presente en todos los usuarios; persiste en un `upsert` batch.
 
 ## 7. Estructura de archivos
 
@@ -128,6 +146,8 @@ src/app/admin/page.jsx             -- crear usuarios + botón randomizar
 src/app/reveal/page.jsx            -- pantalla de revelación (polling + animación)
 supabase/schema.sql
 scripts/seed.mjs                   -- crea el primer admin
+tests/crypto.test.mjs              -- tests unitarios (node:test, sin deps)
+tests/e2e.integration.mjs          -- tests de integración (dev server + Supabase)
 ```
 
 ## 8. Dependencias
@@ -148,6 +168,8 @@ SUPABASE_URL=
 SUPABASE_SERVICE_ROLE_KEY=
 AUTH_SECRET=            # cualquier string largo y aleatorio para firmar JWT
 ```
+
+Los tests e2e añaden `E2E_BASE_URL`, `E2E_ADMIN_NOMBRE` y `E2E_ADMIN_PASSWORD` (solo en `.env.local`).
 
 Supabase:
 
@@ -187,3 +209,6 @@ npm run seed          # usa ADMIN_NOMBRE y ADMIN_PASSWORD
 - La service role key nunca debe exponerse al cliente. Solo en rutas del servidor.
 - El admin ve el mapping un instante en su navegador durante el sorteo. Aceptado.
 - Cookie de sesión con `secure` en producción.
+- RLS activo y sin políticas: `anon`/`authenticated` denegados; solo `service_role`.
+- Rate limit de login: 5 intentos / 15 min por (nombre, IP).
+- Revocación de sesiones subiendo `usuario.token_version`.

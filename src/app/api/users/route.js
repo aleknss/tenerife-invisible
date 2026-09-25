@@ -8,8 +8,7 @@ export async function GET(req) {
     return NextResponse.json({ error: "No autenticado" }, { status: 401 });
   }
 
-  const isAdmin = session.role === "admin";
-  const users = await listUsers(isAdmin);
+  const users = await listUsers();
   return NextResponse.json(users);
 }
 

@@ -1,13 +1,6 @@
 import test, { after } from "node:test";
 import assert from "node:assert/strict";
 import { createClient } from "@supabase/supabase-js";
-import {
-  generateKeypair,
-  encodePublicKey,
-  decodePublicKey,
-  sealString,
-  openString,
-} from "../src/lib/crypto.js";
 
 const BASE = process.env.E2E_BASE_URL || "http://localhost:3000";
 const ADMIN_NOMBRE = process.env.E2E_ADMIN_NOMBRE;
@@ -112,80 +105,6 @@ test("me: sin cookie 401, con cookie 200", { skip }, async () => {
   assert.equal(me.status, 200);
 });
 
-test("public-key: inválida 400, válida 200, distinta 409, force 200", { skip }, async () => {
-  const nombre = `${prefix}pubkey`;
-  created.push(nombre);
-  const adminCookie = await login(ADMIN_NOMBRE, ADMIN_PASSWORD);
-  const { res: createdRes } = await api("/api/users", {
-    method: "POST",
-    cookie: adminCookie,
-    body: { nombre, password: "pw-test-1234" },
-  });
-  assert.equal(createdRes.status, 201);
-
-  const cookie = await login(nombre, "pw-test-1234");
-
-  const { res: invalid } = await api("/api/me/public-key", {
-    method: "POST",
-    cookie,
-    body: { public_key: "no-es-base64!!" },
-  });
-  assert.equal(invalid.status, 400);
-
-  const kp1 = await generateKeypair();
-  const pub1 = await encodePublicKey(kp1.publicKey);
-  const { res: first } = await api("/api/me/public-key", {
-    method: "POST",
-    cookie,
-    body: { public_key: pub1 },
-  });
-  assert.equal(first.status, 200);
-
-  const kp2 = await generateKeypair();
-  const pub2 = await encodePublicKey(kp2.publicKey);
-  const { res: conflict } = await api("/api/me/public-key", {
-    method: "POST",
-    cookie,
-    body: { public_key: pub2 },
-  });
-  assert.equal(conflict.status, 409);
-
-  const { res: forced } = await api("/api/me/public-key", {
-    method: "POST",
-    cookie,
-    body: { public_key: pub2, force: true },
-  });
-  assert.equal(forced.status, 200);
-});
-
-test("randomize: usuario normal 403", { skip }, async () => {
-  const nombre = `${prefix}normal`;
-  created.push(nombre);
-  const adminCookie = await login(ADMIN_NOMBRE, ADMIN_PASSWORD);
-  await api("/api/users", {
-    method: "POST",
-    cookie: adminCookie,
-    body: { nombre, password: "pw-test-1234" },
-  });
-  const cookie = await login(nombre, "pw-test-1234");
-  const { res } = await api("/api/randomize", {
-    method: "POST",
-    cookie,
-    body: { assignments: [{ user_id: "x", ciphertext: "y" }] },
-  });
-  assert.equal(res.status, 403);
-});
-
-test("randomize: cobertura incompleta 400", { skip }, async () => {
-  const adminCookie = await login(ADMIN_NOMBRE, ADMIN_PASSWORD);
-  const { res } = await api("/api/randomize", {
-    method: "POST",
-    cookie: adminCookie,
-    body: { assignments: [{ user_id: "00000000-0000-0000-0000-000000000000", ciphertext: "z" }] },
-  });
-  assert.equal(res.status, 400);
-});
-
 test("cambio de contraseña: revoca la cookie vieja y acepta la nueva", { skip }, async () => {
   const nombre = `${prefix}pwd`;
   created.push(nombre);
@@ -230,99 +149,6 @@ test("cambio de contraseña: revoca la cookie vieja y acepta la nueva", { skip }
   await login(nombre, "new-pass-456");
 });
 
-test("flujo completo: sorteo + revelación", { skip }, async () => {
-  const adminCookie = await login(ADMIN_NOMBRE, ADMIN_PASSWORD);
-
-  const names = [`${prefix}a`, `${prefix}b`, `${prefix}c`];
-  for (const nombre of names) {
-    created.push(nombre);
-    const { res } = await api("/api/users", {
-      method: "POST",
-      cookie: adminCookie,
-      body: { nombre, password: "pw-test-1234" },
-    });
-    assert.equal(res.status, 201);
-  }
-
-  const adminMe = (await api("/api/me", { cookie: adminCookie })).data;
-  const adminSnapshot = {
-    public_key: adminMe.public_key,
-    usuario_asignado: adminMe.usuario_asignado,
-    viewed_at: adminMe.viewed_at,
-  };
-  const adminKp = await generateKeypair();
-
-  try {
-    // Asegurar clave del admin (participa en el sorteo).
-    const adminPub = await encodePublicKey(adminKp.publicKey);
-    const { res: adminKeyRes } = await api("/api/me/public-key", {
-      method: "POST",
-      cookie: adminCookie,
-      body: { public_key: adminPub, force: true },
-    });
-    assert.equal(adminKeyRes.status, 200);
-
-    // Login + clave de cada usuario e2e.
-    const users = [];
-    for (const nombre of names) {
-      const cookie = await login(nombre, "pw-test-1234");
-      const kp = await generateKeypair();
-      const pub = await encodePublicKey(kp.publicKey);
-      const { res } = await api("/api/me/public-key", {
-        method: "POST",
-        cookie,
-        body: { public_key: pub },
-      });
-      assert.equal(res.status, 200);
-      const me = (await api("/api/me", { cookie })).data;
-      users.push({ nombre, id: me.id, cookie, ...kp });
-    }
-
-    // Solo seguro si la BD no tiene participantes ajenos (admin + e2e).
-    const list = (await api("/api/users", { cookie: adminCookie })).data;
-    const ajenos = list.filter(
-      (u) => u.nombre !== ADMIN_NOMBRE && !names.includes(u.nombre),
-    );
-    if (ajenos.length > 0) {
-      return; // hay usuarios reales: no tocamos sus asignados
-    }
-
-    const byId = new Map(list.map((u) => [u.id, u]));
-    const ids = list.map((u) => u.id);
-
-    // Derangement simple: rotación.
-    const assign = new Map();
-    ids.forEach((id, i) => assign.set(id, ids[(i + 1) % ids.length]));
-
-    const rows = [];
-    for (const u of list) {
-      const recipientPub = await decodePublicKey(u.public_key);
-      const ct = await sealString(assign.get(u.id), recipientPub);
-      rows.push({ user_id: u.id, ciphertext: ct });
-    }
-
-    const { res: randomizeRes } = await api("/api/randomize", {
-      method: "POST",
-      cookie: adminCookie,
-      body: { assignments: rows },
-    });
-    assert.equal(randomizeRes.status, 200);
-
-    for (const u of users) {
-      const me = (await api("/api/me", { cookie: u.cookie })).data;
-      assert.ok(me.usuario_asignado, `${u.nombre} sin asignado`);
-      const decoded = await openString(me.usuario_asignado, u.publicKey, u.privateKey);
-      assert.notEqual(decoded, u.id, `${u.nombre} se asignó a sí mismo`);
-      assert.ok(byId.has(decoded), `${u.nombre} asignado desconocido`);
-    }
-  } finally {
-    await supabase
-      .from("usuario")
-      .update(adminSnapshot)
-      .eq("nombre", ADMIN_NOMBRE);
-  }
-});
-
 test("evento único: sorteo con veto + pregunta anónima", { skip }, async () => {
   const adminCookie = await login(ADMIN_NOMBRE, ADMIN_PASSWORD);
 
@@ -342,6 +168,25 @@ test("evento único: sorteo con veto + pregunta anónima", { skip }, async () =>
 
   try {
     await supabase.from("config").update({ estado: "abierto" }).eq("id", 1);
+
+    // Aislar: borrar cualquier usuario e2e_* residual (tests previos de esta
+    // corrida o huérfanos de corridas abortadas) para que el sorteo cubra solo
+    // admin + los 3 de este test.
+    const { data: residuales } = await supabase
+      .from("usuario")
+      .select("id")
+      .like("nombre", "e2e_%");
+    const residualIds = (residuales ?? []).map((u) => u.id);
+    if (residualIds.length) {
+      await supabase.from("pregunta").delete().in("autor_id", residualIds);
+      await supabase.from("pregunta").delete().in("destinatario_id", residualIds);
+      await supabase.from("veto").delete().in("a_id", residualIds);
+      await supabase.from("veto").delete().in("b_id", residualIds);
+      await supabase.from("asignacion").delete().in("dador_id", residualIds);
+      await supabase.from("asignacion").delete().in("receptor_id", residualIds);
+      await supabase.from("usuario").update({ asignado_id: null }).in("asignado_id", residualIds);
+      await supabase.from("usuario").delete().in("id", residualIds);
+    }
 
     // crear + login
     for (const nombre of names) {

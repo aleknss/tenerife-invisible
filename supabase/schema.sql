@@ -5,9 +5,7 @@ create table if not exists usuario (
   id uuid primary key default gen_random_uuid(),
   nombre text not null unique,
   password_hash text not null,
-  public_key text,          -- legacy (sin uso en opción B)
   role text not null default 'user',   -- 'user' | 'admin'
-  usuario_asignado text,    -- deprecado: ciphertext legacy, se sustituye por asignado_id
   asignado_id uuid references usuario(id),  -- receptor en claro (B), null hasta el sorteo
   hobbies text,             -- 3 cosas
   tallas jsonb,             -- { camiseta, pantalon, zapato, ... }
@@ -24,6 +22,10 @@ alter table usuario add column if not exists hobbies text;
 alter table usuario add column if not exists tallas jsonb;
 alter table usuario add column if not exists palabra_vetada text;
 alter table usuario add column if not exists estado text not null default 'pendiente';
+
+-- Retirada de columnas legacy (opción A / sealed box).
+alter table usuario drop column if exists public_key;
+alter table usuario drop column if exists usuario_asignado;
 
 do $$ begin
   alter table usuario add constraint usuario_role_check check (role in ('user','admin'));

@@ -30,7 +30,7 @@ export async function getUserByNombre(nombre) {
 export async function getUserById(id) {
   const { data, error } = await getSupabase()
     .from("usuario")
-    .select("id, nombre, role, public_key, usuario_asignado, viewed_at, token_version")
+    .select("id, nombre, role, viewed_at, token_version")
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
@@ -65,24 +65,13 @@ export async function createUser(nombre, passwordHash, role = "user") {
   return data;
 }
 
-export async function listUsers(includePublicKey) {
-  const columns = includePublicKey
-    ? "id, nombre, role, public_key"
-    : "id, nombre";
+export async function listUsers() {
   const { data, error } = await getSupabase()
     .from("usuario")
-    .select(columns)
+    .select("id, nombre")
     .order("nombre", { ascending: true });
   if (error) throw error;
   return data;
-}
-
-export async function updatePublicKey(id, publicKey) {
-  const { error } = await getSupabase()
-    .from("usuario")
-    .update({ public_key: publicKey })
-    .eq("id", id);
-  if (error) throw error;
 }
 
 export async function markViewed(id) {
@@ -90,19 +79,6 @@ export async function markViewed(id) {
     .from("usuario")
     .update({ viewed_at: new Date().toISOString() })
     .eq("id", id);
-  if (error) throw error;
-}
-
-export async function applyAssignments(rows) {
-  // rows: [{ user_id, ciphertext }]
-  const payload = rows.map((row) => ({
-    id: row.user_id,
-    usuario_asignado: row.ciphertext,
-    viewed_at: null,
-  }));
-  const { error } = await getSupabase()
-    .from("usuario")
-    .upsert(payload, { onConflict: "id" });
   if (error) throw error;
 }
 

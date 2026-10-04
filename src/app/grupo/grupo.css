@@ -1,0 +1,56 @@
+.grupo-page {
+    min-height: 100vh;
+    box-sizing: border-box;
+
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+
+    background-color: #FFF8F0;
+
+    padding: 40px 20px 110px;
+}
+
+.grupo-card {
+    width: 100%;
+    max-width: 450px;
+}
+
+.grupo-page h1 {
+    margin: 0 0 20px;
+
+    color: #263238;
+    font-size: 26px;
+}
+
+.grupo-page h2 {
+    margin-top: 18px;
+    margin-bottom: 6px;
+
+    color: #263238;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+.grupo-page p {
+    margin: 5px 0;
+
+    color: #4F5B61;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+/* Datos del evento */
+
+.evento-dato {
+    padding: 12px 15px;
+
+    background-color: #FFF8F0;
+
+    border: 1px solid #E5DDD5;
+    border-left: 4px solid #E85D5D;
+
+    border-radius: 8px;
+
+    color: #263238;
+}

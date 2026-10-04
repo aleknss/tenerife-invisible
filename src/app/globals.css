@@ -24,3 +24,27 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+
+button {
+  background-color: var(--foreground);
+  color: var(--background);
+  border: none;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+}
+
+main {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #FFF8F0;
+    color: #263238;
+}
+
+h1{
+font-size: 26px;
+font-style: bold;
+
+}

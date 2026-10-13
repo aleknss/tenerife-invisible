@@ -30,7 +30,7 @@ export async function getUserByNombre(nombre) {
 export async function getUserById(id) {
   const { data, error } = await getSupabase()
     .from("usuario")
-    .select("id, nombre, role, viewed_at, token_version")
+    .select("id, nombre, role, viewed_at, token_version, hobbies, tallas, palabra_vetada")
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;

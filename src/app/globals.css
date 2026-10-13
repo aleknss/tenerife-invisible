@@ -184,3 +184,95 @@ h1 {
   background-color: var(--err-soft);
   color: var(--err);
 }
+
+/* Shell unificado de páginas */
+
+.app-page {
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+
+  min-height: 100vh;
+
+  padding: 40px 16px 110px;
+
+  background-color: var(--bg);
+}
+
+.app-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+
+  width: 100%;
+  max-width: 560px;
+}
+
+/* Motion (entrada de contenido) */
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.app-stack > * {
+  animation: rise 0.28s ease both;
+}
+
+.app-stack > *:nth-child(2) { animation-delay: 0.04s; }
+.app-stack > *:nth-child(3) { animation-delay: 0.08s; }
+.app-stack > *:nth-child(4) { animation-delay: 0.12s; }
+
+@media (prefers-reduced-motion: reduce) {
+  .app-stack > * {
+    animation: none;
+  }
+}
+
+/* Skeleton (loading) */
+
+.skeleton {
+  height: 14px;
+  border-radius: 8px;
+
+  background: linear-gradient(
+    90deg,
+    var(--surface-2) 25%,
+    #F2E7DA 37%,
+    var(--surface-2) 63%
+  );
+  background-size: 400% 100%;
+
+  animation: shimmer 1.4s ease infinite;
+}
+
+.skeleton-card {
+  padding: 32px;
+
+  background-color: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+
+  box-shadow: var(--shadow);
+}
+
+.skeleton-title {
+  height: 26px;
+  width: 55%;
+
+  margin: 0 auto 10px;
+}
+
+.skeleton-line { margin-bottom: 12px; }
+.skeleton-line.short { width: 70%; }
+
+@keyframes shimmer {
+  0% { background-position: 100% 0; }
+  100% { background-position: 0 0; }
+}

@@ -1,39 +1,3 @@
-.grupo-page {
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-
-    min-height: 100vh;
-
-    padding: 40px 20px 110px;
-
-    background-color: var(--bg);
-}
-
-.grupo-page h1 {
-    margin: 0 0 8px;
-    font-size: 26px;
-}
-
-.grupo-page h2 {
-    margin: 18px 0 8px;
-
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-
-    color: var(--ink-faint);
-}
-
-.grupo-page p {
-    margin: 0;
-
-    color: var(--ink-soft);
-    font-size: 15px;
-    line-height: 1.5;
-}
-
 .evento-dato {
     padding: 14px 16px;
 

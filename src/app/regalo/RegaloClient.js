@@ -66,9 +66,9 @@ export default function RegaloClient({ amigo, viewedAt, enviada }) {
 
     if (amigo === null) {
         return (
-            <main className="regalo-page">
+            <main className="app-page regalo-page">
 
-                <div className="regalo-cards">
+                <div className="app-stack">
 
                     <Card>
                         <h1>Tu amigo invisible</h1>
@@ -89,9 +89,9 @@ export default function RegaloClient({ amigo, viewedAt, enviada }) {
         : (amigo.hobbies ?? "").split(",").map((g) => g.trim()).filter(Boolean);
 
     return (
-        <main className="regalo-page">
+        <main className="app-page regalo-page">
 
-            <div className="regalo-cards">
+            <div className="app-stack">
 
                 <Card>
 

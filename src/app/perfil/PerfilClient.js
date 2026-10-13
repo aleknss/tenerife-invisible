@@ -182,9 +182,49 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
     }
 
     return (
-        <main className="perfil-page">
+        <main className="app-page perfil-page">
 
-            <div className="perfil-cards">
+            <div className="app-stack">
+
+                <Card>
+
+                    <h1><MessageCircle size={22} /> Pregunta del amigo invisible</h1>
+
+                    {pregunta === null ? (
+                        <p>
+                            De momento no te ha preguntado nada.
+                        </p>
+                    ) : (
+                        <>
+                            <p className="pregunta">
+                                {pregunta.texto}
+                            </p>
+
+                            {pregunta.respondida_at ? (
+                                <p className="respuesta">
+                                    {pregunta.respuesta ?? respuesta}
+                                </p>
+                            ) : (
+                                <form onSubmit={responderPregunta}>
+
+                                    <input
+                                        type="text"
+                                        placeholder="Escribe tu respuesta"
+                                        value={respuesta}
+                                        onChange={(e) => setRespuesta(e.target.value)}
+                                        required
+                                    />
+
+                                    <Button disabled={respondiendo}>
+                                        {respondiendo ? "Enviando…" : "Enviar"}
+                                    </Button>
+
+                                </form>
+                            )}
+                        </>
+                    )}
+
+                </Card>
 
                 <Card>
 
@@ -303,46 +343,6 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
                         </>
                     ) : (
                         <p>Cargando…</p>
-                    )}
-
-                </Card>
-
-                <Card>
-
-                    <h1><MessageCircle size={22} /> Pregunta del amigo invisible</h1>
-
-                    {pregunta === null ? (
-                        <p>
-                            De momento no te ha preguntado nada.
-                        </p>
-                    ) : (
-                        <>
-                            <p className="pregunta">
-                                {pregunta.texto}
-                            </p>
-
-                            {pregunta.respondida_at ? (
-                                <p className="respuesta">
-                                    {pregunta.respuesta ?? respuesta}
-                                </p>
-                            ) : (
-                                <form onSubmit={responderPregunta}>
-
-                                    <input
-                                        type="text"
-                                        placeholder="Escribe tu respuesta"
-                                        value={respuesta}
-                                        onChange={(e) => setRespuesta(e.target.value)}
-                                        required
-                                    />
-
-                                    <Button disabled={respondiendo}>
-                                        {respondiendo ? "Enviando…" : "Enviar"}
-                                    </Button>
-
-                                </form>
-                            )}
-                        </>
                     )}
 
                 </Card>

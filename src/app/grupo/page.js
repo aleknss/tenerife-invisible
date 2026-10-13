@@ -10,7 +10,9 @@ export default async function Grupo() {
     const config = (await getConfig()) ?? {};
 
     return (
-        <main className="grupo-page">
+        <main className="app-page grupo-page">
+
+            <div className="app-stack">
 
             <Card>
 
@@ -40,6 +42,8 @@ export default async function Grupo() {
                 )}
 
             </Card>
+
+            </div>
 
         </main>
     );

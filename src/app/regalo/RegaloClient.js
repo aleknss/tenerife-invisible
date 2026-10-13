@@ -20,8 +20,7 @@ export default function RegaloClient({ amigo, viewedAt, enviada }) {
             return;
         }
 
-        const reducir = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-        const duracion = reducir ? 0 : 2200;
+        const duracion = 3200;
 
         let vivo = true;
         const temporizador = setTimeout(async () => {
@@ -183,6 +182,7 @@ export default function RegaloClient({ amigo, viewedAt, enviada }) {
                     <div className="reveal-box">
                         <Gift className="reveal-icon" size={72} />
                         <p>¡Ya tienes amig@ invisible!</p>
+                        <span className="reveal-name">¡¡{amigo.nombre}!!</span>
                     </div>
                 </div>
             )}

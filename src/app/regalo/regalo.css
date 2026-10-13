@@ -56,7 +56,7 @@
 
     pointer-events: none;
 
-    animation: revealFade 2.2s ease forwards;
+    animation: revealFade 3.2s ease forwards;
 }
 
 .reveal-box {
@@ -67,6 +67,8 @@
 
     color: #ffffff;
     text-align: center;
+
+    animation: boxRise 3.2s ease forwards;
 }
 
 .reveal-box p {
@@ -77,6 +79,15 @@
     font-weight: 700;
 }
 
+.reveal-name {
+    font-size: 32px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+
+    animation: nameIn 0.6s ease 0.9s both;
+}
+
 .reveal-icon {
     color: #ffffff;
 
@@ -85,9 +96,27 @@
 
 @keyframes revealFade {
     0% { opacity: 0; }
-    12% { opacity: 1; }
+    8% { opacity: 1; }
     85% { opacity: 1; }
     100% { opacity: 0; }
+}
+
+@keyframes boxRise {
+    0% { transform: translateY(0); }
+    62% { transform: translateY(0); }
+    78% { transform: translateY(-46px); }
+    100% { transform: translateY(-46px); }
+}
+
+@keyframes nameIn {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
 }
 
 @keyframes giftPop {
@@ -107,7 +136,9 @@
 
 @media (prefers-reduced-motion: reduce) {
     .reveal,
-    .reveal-icon {
+    .reveal-box,
+    .reveal-icon,
+    .reveal-name {
         animation: none;
     }
 }

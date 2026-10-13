@@ -1,10 +1,13 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import "./NavBar.css";
 
 export default function NavBar({ activePage = "grupo" }) {
+
+    const router = useRouter();
 
     const [isAdmin, setIsAdmin] = useState(false);
 
@@ -24,6 +27,15 @@ export default function NavBar({ activePage = "grupo" }) {
 
         comprobarAdmin();
     }, []);
+
+    async function cerrarSesion() {
+        try {
+            await fetch("/api/logout", { method: "POST" });
+        } catch (error) {
+            console.error("Error:", error);
+        }
+        router.replace("/");
+    }
 
     return (
         <nav className="navbar">
@@ -61,6 +73,15 @@ export default function NavBar({ activePage = "grupo" }) {
                     <span>Admin</span>
                 </Link>
             )}
+
+            <button
+                type="button"
+                className="navbar-item"
+                onClick={cerrarSesion}
+            >
+                <span className="navbar-icon">🚪</span>
+                <span>Salir</span>
+            </button>
 
         </nav>
     );

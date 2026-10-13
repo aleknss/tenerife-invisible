@@ -8,6 +8,36 @@
     background-color: #FFF8F0;
 }
 
+.admin-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    width: 100%;
+    max-width: 520px;
+
+    padding: 24px 16px 90px 16px;
+}
+
+.config-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.config-form input,
+.config-form textarea {
+    width: 100%;
+    padding: 12px;
+
+    border: 1px solid #D9D9D9;
+    border-radius: 10px;
+
+    background-color: #F5F5F5;
+
+    font-size: 16px;
+}
+
 .exclusion-form {
     display: flex;
     flex-direction: column;

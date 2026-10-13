@@ -12,6 +12,7 @@ export default function Regalo() {
     const [amigo, setAmigo] = useState(null);
     const [preguntaEnviada, setPreguntaEnviada] = useState(null);
     const [texto, setTexto] = useState("");
+    const [enviando, setEnviando] = useState(false);
     const [mensaje, setMensaje] = useState("");
     const [error, setError] = useState("");
 
@@ -52,6 +53,7 @@ export default function Regalo() {
 
         setMensaje("");
         setError("");
+        setEnviando(true);
 
         try {
 
@@ -75,6 +77,8 @@ export default function Regalo() {
         } catch (err) {
             console.error("Error:", err);
             setError("Error de conexión");
+        } finally {
+            setEnviando(false);
         }
     }
 
@@ -184,8 +188,8 @@ export default function Regalo() {
                                 required
                             />
 
-                            <Button>
-                                Enviar mensaje
+                            <Button disabled={enviando}>
+                                {enviando ? "Enviando…" : "Enviar mensaje"}
                             </Button>
 
                         </form>

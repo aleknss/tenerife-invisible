@@ -25,6 +25,9 @@ export default function Admin() {
     const [nuevoPassword, setNuevoPassword] = useState("");
     const [nuevoRole, setNuevoRole] = useState("user");
     const [creando, setCreando] = useState(false);
+    const [sorteando, setSorteando] = useState(false);
+    const [guardandoConfig, setGuardandoConfig] = useState(false);
+    const [guardandoVetos, setGuardandoVetos] = useState(false);
 
     const [mensaje, setMensaje] = useState("");
     const [error, setError] = useState("");
@@ -160,10 +163,13 @@ export default function Admin() {
 
         setMensaje("");
         setError("");
+        setGuardandoVetos(true);
 
-        try {
+        for (let i = 0; i < exclusiones.length; i++) {
 
-            for (const exclusion of exclusiones) {
+            const exclusion = exclusiones[i];
+
+            try {
 
                 const respuesta = await fetch("/api/admin/vetos", {
                     method: "POST",
@@ -177,21 +183,25 @@ export default function Admin() {
                 if (!respuesta.ok) {
                     throw new Error("Error al guardar la exclusión");
                 }
+            } catch (err) {
+                console.error("Error:", err);
+                setError("No se pudieron guardar todas las exclusiones");
+                setExclusiones(exclusiones.slice(i));
+                setGuardandoVetos(false);
+                return;
             }
-
-            setExclusiones([]);
-            setMensaje("Exclusiones guardadas");
-
-        } catch (err) {
-            console.error("Error:", err);
-            setError("No se pudieron guardar las exclusiones");
         }
+
+        setExclusiones([]);
+        setMensaje("Exclusiones guardadas");
+        setGuardandoVetos(false);
     }
 
     async function sortearAhora() {
 
         setMensaje("");
         setError("");
+        setSorteando(true);
 
         try {
 
@@ -213,6 +223,8 @@ export default function Admin() {
         } catch (err) {
             console.error("Error:", err);
             setError("Error de conexión");
+        } finally {
+            setSorteando(false);
         }
     }
 
@@ -226,6 +238,7 @@ export default function Admin() {
 
         setMensaje("");
         setError("");
+        setGuardandoConfig(true);
 
         function aNumero(valor) {
             return valor === "" || valor == null ? null : Number(valor);
@@ -259,6 +272,8 @@ export default function Admin() {
         } catch (err) {
             console.error("Error:", err);
             setError("Error de conexión");
+        } finally {
+            setGuardandoConfig(false);
         }
     }
 
@@ -292,8 +307,8 @@ export default function Admin() {
                             <p>Cargando…</p>
                         )}
 
-                        <Button type="button" onClick={sortearAhora}>
-                            Sortear
+                        <Button type="button" onClick={sortearAhora} disabled={sorteando}>
+                            {sorteando ? "Sorteando…" : "Sortear"}
                         </Button>
 
                     </Card>
@@ -423,8 +438,8 @@ export default function Admin() {
                                     </div>
                                 </label>
 
-                                <Button type="submit">
-                                    Guardar configuración
+                                <Button type="submit" disabled={guardandoConfig}>
+                                    {guardandoConfig ? "Guardando…" : "Guardar configuración"}
                                 </Button>
 
                             </form>
@@ -498,8 +513,8 @@ export default function Admin() {
                         </div>
 
                         {exclusiones.length > 0 && (
-                            <Button type="button" onClick={confirmarExclusiones}>
-                                Confirmar
+                            <Button type="button" onClick={confirmarExclusiones} disabled={guardandoVetos}>
+                                {guardandoVetos ? "Guardando…" : "Confirmar"}
                             </Button>
                         )}
 

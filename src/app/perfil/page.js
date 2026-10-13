@@ -21,6 +21,9 @@ export default function Perfil() {
 
     const [evento, setEvento] = useState(null);
     const [marcando, setMarcando] = useState(false);
+    const [guardando, setGuardando] = useState(false);
+    const [cambiandoPass, setCambiandoPass] = useState(false);
+    const [respondiendo, setRespondiendo] = useState(false);
 
     const [mensaje, setMensaje] = useState("");
     const [error, setError] = useState("");
@@ -78,6 +81,7 @@ export default function Perfil() {
 
         setMensaje("");
         setError("");
+        setGuardando(true);
 
         try {
 
@@ -103,6 +107,8 @@ export default function Perfil() {
         } catch (err) {
             console.error("Error:", err);
             setError("Error de conexión");
+        } finally {
+            setGuardando(false);
         }
     }
 
@@ -112,6 +118,7 @@ export default function Perfil() {
 
         setMensaje("");
         setError("");
+        setCambiandoPass(true);
 
         try {
 
@@ -135,6 +142,8 @@ export default function Perfil() {
         } catch (err) {
             console.error("Error:", err);
             setError("Error de conexión");
+        } finally {
+            setCambiandoPass(false);
         }
     }
 
@@ -144,6 +153,7 @@ export default function Perfil() {
 
         setMensaje("");
         setError("");
+        setRespondiendo(true);
 
         try {
 
@@ -167,6 +177,8 @@ export default function Perfil() {
         } catch (err) {
             console.error("Error:", err);
             setError("Error de conexión");
+        } finally {
+            setRespondiendo(false);
         }
     }
 
@@ -260,8 +272,8 @@ export default function Perfil() {
                             onChange={(e) => cambiarTalla("zapatos", e.target.value)}
                         />
 
-                        <Button>
-                            Guardar
+                        <Button disabled={guardando}>
+                            {guardando ? "Guardando…" : "Guardar"}
                         </Button>
 
                     </form>
@@ -292,8 +304,8 @@ export default function Perfil() {
                             required
                         />
 
-                        <Button>
-                            Cambiar contraseña
+                        <Button disabled={cambiandoPass}>
+                            {cambiandoPass ? "Cambiando…" : "Cambiar contraseña"}
                         </Button>
 
                     </form>
@@ -355,8 +367,8 @@ export default function Perfil() {
                                         required
                                     />
 
-                                    <Button>
-                                        Enviar
+                                    <Button disabled={respondiendo}>
+                                        {respondiendo ? "Enviando…" : "Enviar"}
                                     </Button>
 
                                 </form>

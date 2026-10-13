@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import Card from "@/components/Card/Card";
 import NavBar from "@/components/NavBar/NavBar";
 import "./grupo.css";
@@ -35,7 +37,7 @@ export default function Grupo() {
     }, []);
 
     return (
-        <main>
+        <main className="grupo-page">
 
             <Card>
 
@@ -60,24 +62,14 @@ export default function Grupo() {
                             </>
                         )}
 
-                        {config.tematica && (
-                            <>
-                                <h2>Temática</h2>
-                                <p>{config.tematica}</p>
-                            </>
-                        )}
-
-                        {config.metodo_entrega && (
-                            <>
-                                <h2>Entrega</h2>
-                                <p>{config.metodo_entrega}</p>
-                            </>
-                        )}
-
                         {config.reglas && (
                             <>
                                 <h2>Reglas</h2>
-                                <p>{config.reglas}</p>
+                                <div className="markdown-body">
+                                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                        {config.reglas}
+                                    </ReactMarkdown>
+                                </div>
                             </>
                         )}
                     </>

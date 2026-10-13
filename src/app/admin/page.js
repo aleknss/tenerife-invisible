@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
 import "./admin.css";
@@ -180,9 +182,6 @@ export default function Admin() {
                     precio: aNumero(config.precio),
                     moneda: config.moneda,
                     fecha_entrega: config.fecha_entrega || null,
-                    tematica: config.tematica,
-                    metodo_entrega: config.metodo_entrega,
-                    umbral_listos: aNumero(config.umbral_listos),
                     reglas: config.reglas
                 })
             });
@@ -207,171 +206,205 @@ export default function Admin() {
     return (
         <main className="admin-page">
 
-            <div className="admin-cards">
+            <div className="admin-bento">
 
-                <Card>
-
-                    <h1>Administración</h1>
-
-                    {mensaje && <p role="status">{mensaje}</p>}
-                    {error && <p className="admin-error" role="alert">{error}</p>}
-
-                    <h2>Estado</h2>
-                    {estado ? (
-                        <p>
-                            {estado.listos}/{estado.total} listos · evento: {estado.estado}
-                            {estado.umbral_listos != null && ` · umbral: ${estado.umbral_listos}`}
-                        </p>
-                    ) : (
-                        <p>Cargando…</p>
-                    )}
-
-                    <Button onClick={sortearAhora}>
-                        Sortear
-                    </Button>
-
-                </Card>
-
-                <Card>
-
-                    <h2>Configuración del evento</h2>
-
-                    {config && (
-                        <form onSubmit={guardarConfig} className="config-form">
-
-                            <input
-                                type="text"
-                                placeholder="Nombre del evento"
-                                value={config.nombre ?? ""}
-                                onChange={(e) => cambiarConfig("nombre", e.target.value)}
-                            />
-
-                            <input
-                                type="number"
-                                placeholder="Precio"
-                                value={config.precio ?? ""}
-                                onChange={(e) => cambiarConfig("precio", e.target.value)}
-                            />
-
-                            <input
-                                type="text"
-                                placeholder="Moneda"
-                                value={config.moneda ?? ""}
-                                onChange={(e) => cambiarConfig("moneda", e.target.value)}
-                            />
-
-                            <input
-                                type="date"
-                                value={config.fecha_entrega ?? ""}
-                                onChange={(e) => cambiarConfig("fecha_entrega", e.target.value)}
-                            />
-
-                            <input
-                                type="text"
-                                placeholder="Temática"
-                                value={config.tematica ?? ""}
-                                onChange={(e) => cambiarConfig("tematica", e.target.value)}
-                            />
-
-                            <input
-                                type="text"
-                                placeholder="Método de entrega"
-                                value={config.metodo_entrega ?? ""}
-                                onChange={(e) => cambiarConfig("metodo_entrega", e.target.value)}
-                            />
-
-                            <input
-                                type="number"
-                                placeholder="Umbral de listos"
-                                value={config.umbral_listos ?? ""}
-                                onChange={(e) => cambiarConfig("umbral_listos", e.target.value)}
-                            />
-
-                            <textarea
-                                placeholder="Reglas"
-                                value={config.reglas ?? ""}
-                                onChange={(e) => cambiarConfig("reglas", e.target.value)}
-                            />
-
-                            <Button>
-                                Guardar configuración
-                            </Button>
-
-                        </form>
-                    )}
-
-                </Card>
-
-                <Card>
-
-                    <h2>Exclusiones</h2>
-
-                    {!mostrarFormulario && (
-                        <Button onClick={() => setMostrarFormulario(true)}>
-                            Añadir exclusión
-                        </Button>
-                    )}
-
-                    {mostrarFormulario && (
-                        <div className="exclusion-form">
-
-                            <select
-                                value={persona1}
-                                onChange={(e) => setPersona1(e.target.value)}
-                            >
-                                <option value="">
-                                    Selecciona una persona
-                                </option>
-
-                                {participantes.map((p) => (
-                                    <option key={p.id} value={p.id}>
-                                        {p.nombre}
-                                    </option>
-                                ))}
-                            </select>
-
-                            <span>
-                                no puede tocar a
-                            </span>
-
-                            <select
-                                value={persona2}
-                                onChange={(e) => setPersona2(e.target.value)}
-                            >
-                                <option value="">
-                                    Selecciona una persona
-                                </option>
-
-                                {participantes.map((p) => (
-                                    <option key={p.id} value={p.id}>
-                                        {p.nombre}
-                                    </option>
-                                ))}
-                            </select>
-
-                            <Button onClick={añadirExclusion}>
-                                Añadir
-                            </Button>
-
-                        </div>
-                    )}
-
-                    <div className="exclusions-list">
-                        {exclusiones.map((exclusion, index) => (
-                            <p key={index}>
-                                {exclusion.nombre1} no puede tocar a{" "}
-                                {exclusion.nombre2}
-                            </p>
-                        ))}
+                {(mensaje || error) && (
+                    <div
+                        className={`bento-alert ${error ? "bento-alert-error" : ""}`}
+                        role={error ? "alert" : "status"}
+                    >
+                        {error || mensaje}
                     </div>
+                )}
 
-                    {exclusiones.length > 0 && (
-                        <Button onClick={confirmarExclusiones}>
-                            Confirmar
+                <section className="bento-item bento-estado">
+                    <Card>
+
+                        <h2>Estado</h2>
+
+                        {estado ? (
+                            <>
+                                <p className="estado-num">
+                                    {estado.listos}<span>/{estado.total}</span>
+                                </p>
+                                <p className="estado-badge">{estado.estado}</p>
+                            </>
+                        ) : (
+                            <p>Cargando…</p>
+                        )}
+
+                        <Button type="button" onClick={sortearAhora}>
+                            Sortear
                         </Button>
-                    )}
 
-                </Card>
+                    </Card>
+                </section>
+
+                <section className="bento-item bento-participantes">
+                    <Card>
+
+                        <h2>Participantes</h2>
+
+                        <p className="estado-num">{participantes.length}</p>
+
+                        <p className="participantes-nombres">
+                            {participantes.map((p) => p.nombre).join(" · ") || "Sin participantes"}
+                        </p>
+
+                    </Card>
+                </section>
+
+                <section className="bento-item bento-config">
+                    <Card>
+
+                        <h2>Configuración del evento</h2>
+
+                        {config && (
+                            <form onSubmit={guardarConfig} className="config-form">
+
+                                <label className="field">
+                                    <span>Nombre</span>
+                                    <input
+                                        type="text"
+                                        placeholder="Nombre del evento"
+                                        value={config.nombre ?? ""}
+                                        onChange={(e) => cambiarConfig("nombre", e.target.value)}
+                                    />
+                                </label>
+
+                                <div className="field-row">
+                                    <label className="field">
+                                        <span>Precio</span>
+                                        <input
+                                            type="number"
+                                            placeholder="0"
+                                            value={config.precio ?? ""}
+                                            onChange={(e) => cambiarConfig("precio", e.target.value)}
+                                        />
+                                    </label>
+
+                                    <label className="field">
+                                        <span>Moneda</span>
+                                        <input
+                                            type="text"
+                                            placeholder="EUR"
+                                            value={config.moneda ?? ""}
+                                            onChange={(e) => cambiarConfig("moneda", e.target.value)}
+                                        />
+                                    </label>
+                                </div>
+
+                                <label className="field">
+                                    <span>Fecha de entrega</span>
+                                    <input
+                                        type="date"
+                                        value={config.fecha_entrega ?? ""}
+                                        onChange={(e) => cambiarConfig("fecha_entrega", e.target.value)}
+                                    />
+                                </label>
+
+                                <label className="field">
+                                    <span>Reglas (Markdown)</span>
+                                    <div className="markdown-editor">
+                                        <textarea
+                                            placeholder={"# Título\n- punto\n**negrita** `código`"}
+                                            value={config.reglas ?? ""}
+                                            onChange={(e) => cambiarConfig("reglas", e.target.value)}
+                                        />
+                                        <div className="markdown-preview markdown-body">
+                                            {config.reglas ? (
+                                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                                                    {config.reglas}
+                                                </ReactMarkdown>
+                                            ) : (
+                                                <p className="markdown-placeholder">Vista previa</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                </label>
+
+                                <Button type="submit">
+                                    Guardar configuración
+                                </Button>
+
+                            </form>
+                        )}
+
+                    </Card>
+                </section>
+
+                <section className="bento-item bento-exclusiones">
+                    <Card>
+
+                        <h2>Exclusiones</h2>
+
+                        {!mostrarFormulario && (
+                            <Button type="button" onClick={() => setMostrarFormulario(true)}>
+                                Añadir exclusión
+                            </Button>
+                        )}
+
+                        {mostrarFormulario && (
+                            <div className="exclusion-form">
+
+                                <select
+                                    value={persona1}
+                                    onChange={(e) => setPersona1(e.target.value)}
+                                >
+                                    <option value="">
+                                        Selecciona una persona
+                                    </option>
+
+                                    {participantes.map((p) => (
+                                        <option key={p.id} value={p.id}>
+                                            {p.nombre}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                <span>
+                                    no puede tocar a
+                                </span>
+
+                                <select
+                                    value={persona2}
+                                    onChange={(e) => setPersona2(e.target.value)}
+                                >
+                                    <option value="">
+                                        Selecciona una persona
+                                    </option>
+
+                                    {participantes.map((p) => (
+                                        <option key={p.id} value={p.id}>
+                                            {p.nombre}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                <Button type="button" onClick={añadirExclusion}>
+                                    Añadir
+                                </Button>
+
+                            </div>
+                        )}
+
+                        <div className="exclusions-list">
+                            {exclusiones.map((exclusion, index) => (
+                                <p key={index}>
+                                    {exclusion.nombre1} no puede tocar a{" "}
+                                    {exclusion.nombre2}
+                                </p>
+                            ))}
+                        </div>
+
+                        {exclusiones.length > 0 && (
+                            <Button type="button" onClick={confirmarExclusiones}>
+                                Confirmar
+                            </Button>
+                        )}
+
+                    </Card>
+                </section>
 
             </div>
 

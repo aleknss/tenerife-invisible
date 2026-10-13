@@ -8,95 +8,84 @@ import Button from "@/components/Button/Button";
 import "./login.css";
 
 export default function LoginClient() {
+  const router = useRouter();
 
-    const router = useRouter();
+  const [nombre, setNombre] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
+  const [cargando, setCargando] = useState(false);
 
-    const [nombre, setNombre] = useState("");
-    const [password, setPassword] = useState("");
-    const [error, setError] = useState("");
-    const [cargando, setCargando] = useState(false);
+  async function iniciarSesion(e) {
+    e.preventDefault();
 
-    async function iniciarSesion(e) {
-
-        e.preventDefault();
-
-        if (cargando) {
-            return;
-        }
-
-        setError("");
-        setCargando(true);
-
-        try {
-
-            const respuesta = await fetch("/api/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ nombre, password })
-            });
-
-            const datos = await respuesta.json().catch(() => ({}));
-
-            if (!respuesta.ok) {
-                setError(datos.error ?? "No se pudo iniciar sesión");
-                return;
-            }
-
-            router.push(datos.role === "admin" ? "/admin" : "/grupo");
-
-        } catch (err) {
-            console.error("Error:", err);
-            setError("Error de conexión");
-        } finally {
-            setCargando(false);
-        }
+    if (cargando) {
+      return;
     }
 
-    return (
-        <main className="login-page">
+    setError("");
+    setCargando(true);
 
-            <div className="login-hero">
-                <Gift className="login-emoji" size={46} />
-                <h1>Chacho Invisible</h1>
-                <p>Reparte ilusión. Sorteo secreto entre tu gente.</p>
-            </div>
+    try {
+      const respuesta = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nombre, password }),
+      });
 
-            <Card>
+      const datos = await respuesta.json().catch(() => ({}));
 
-                <form onSubmit={iniciarSesion}>
+      if (!respuesta.ok) {
+        setError(datos.error ?? "No se pudo iniciar sesión");
+        return;
+      }
 
-                    <input
-                        type="text"
-                        placeholder="Nombre"
-                        value={nombre}
-                        onChange={(e) => setNombre(e.target.value)}
-                        autoComplete="username"
-                        required
-                    />
+      router.push(datos.role === "admin" ? "/admin" : "/grupo");
+    } catch (err) {
+      console.error("Error:", err);
+      setError("Error de conexión");
+    } finally {
+      setCargando(false);
+    }
+  }
 
-                    <input
-                        type="password"
-                        placeholder="Contraseña"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        autoComplete="current-password"
-                        required
-                    />
+  return (
+    <main className="login-page">
+      <div className="login-hero">
+        <Gift className="login-emoji" size={46} />
+        <h1>Chacho Invisible</h1>
+      </div>
 
-                    {error && (
-                        <p className="form-error" role="alert">
-                            {error}
-                        </p>
-                    )}
+      <Card>
+        <form onSubmit={iniciarSesion}>
+          <input
+            type="text"
+            placeholder="Nombre"
+            value={nombre}
+            onChange={(e) => setNombre(e.target.value)}
+            autoComplete="username"
+            required
+          />
 
-                    <Button disabled={cargando}>
-                        {cargando ? "Entrando…" : "Entrar"}
-                    </Button>
+          <input
+            type="password"
+            placeholder="Contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            autoComplete="current-password"
+            required
+          />
 
-                </form>
+          {error && (
+            <p className="form-error" role="alert">
+              {error}
+            </p>
+          )}
 
-            </Card>
-
-        </main>
-    );
+          <Button disabled={cargando}>
+            {cargando ? "Entrando…" : "Entrar"}
+          </Button>
+        </form>
+      </Card>
+    </main>
+  );
 }

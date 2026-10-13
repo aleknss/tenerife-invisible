@@ -8,6 +8,7 @@ import "./regalo.css";
 
 export default function RegaloClient({ amigo, viewedAt, enviada }) {
 
+    const [revelando, setRevelando] = useState(Boolean(amigo) && !viewedAt);
     const [preguntaEnviada, setPreguntaEnviada] = useState(enviada ?? null);
     const [texto, setTexto] = useState("");
     const [enviando, setEnviando] = useState(false);
@@ -19,15 +20,25 @@ export default function RegaloClient({ amigo, viewedAt, enviada }) {
             return;
         }
 
-        async function marcarVisto() {
+        const reducir = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const duracion = reducir ? 0 : 2200;
+
+        let vivo = true;
+        const temporizador = setTimeout(async () => {
             try {
                 await fetch("/api/me/viewed", { method: "POST" });
             } catch (err) {
                 console.error("Error:", err);
             }
-        }
+            if (vivo) {
+                setRevelando(false);
+            }
+        }, duracion);
 
-        marcarVisto();
+        return () => {
+            vivo = false;
+            clearTimeout(temporizador);
+        };
     }, [amigo, viewedAt]);
 
     async function enviarMensaje(e) {
@@ -166,6 +177,15 @@ export default function RegaloClient({ amigo, viewedAt, enviada }) {
                 </Card>
 
             </div>
+
+            {revelando && (
+                <div className="reveal" role="status" aria-live="polite">
+                    <div className="reveal-box">
+                        <Gift className="reveal-icon" size={72} />
+                        <p>¡Ya tienes amig@ invisible!</p>
+                    </div>
+                </div>
+            )}
 
         </main>
     );

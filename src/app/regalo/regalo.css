@@ -40,3 +40,74 @@
         grid-template-columns: 1fr;
     }
 }
+
+/* Animación de revelado */
+
+.reveal {
+    position: fixed;
+    inset: 0;
+    z-index: 2000;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: radial-gradient(circle at 50% 40%, #FF8A8A, #E85D5D 70%);
+
+    pointer-events: none;
+
+    animation: revealFade 2.2s ease forwards;
+}
+
+.reveal-box {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+
+    color: #ffffff;
+    text-align: center;
+}
+
+.reveal-box p {
+    margin: 0;
+
+    color: #ffffff;
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.reveal-icon {
+    color: #ffffff;
+
+    animation: giftPop 0.9s cubic-bezier(0.2, 0.9, 0.3, 1.4) both;
+}
+
+@keyframes revealFade {
+    0% { opacity: 0; }
+    12% { opacity: 1; }
+    85% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+@keyframes giftPop {
+    0% {
+        transform: scale(0.3) rotate(-18deg);
+        opacity: 0;
+    }
+    60% {
+        transform: scale(1.12) rotate(6deg);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1) rotate(0);
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .reveal,
+    .reveal-icon {
+        animation: none;
+    }
+}

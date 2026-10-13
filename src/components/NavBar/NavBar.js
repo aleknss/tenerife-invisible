@@ -9,15 +9,21 @@ export default function NavBar({ activePage = "grupo" }) {
     const [isAdmin, setIsAdmin] = useState(false);
 
     useEffect(() => {
+        async function comprobarAdmin() {
+            try {
+                const respuesta = await fetch("/api/me");
+                if (!respuesta.ok) {
+                    return;
+                }
+                const datos = await respuesta.json();
+                setIsAdmin(datos.role === "admin");
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+
         comprobarAdmin();
     }, []);
-
-    function comprobarAdmin() {
-        //logica de api aqui  
-        const admin = true;
-
-        setIsAdmin(admin);
-    }
 
     return (
         <nav className="navbar">

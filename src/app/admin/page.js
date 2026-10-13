@@ -17,27 +17,27 @@ export default function Admin() {
     const [persona2, setPersona2] = useState("");
 
     useEffect(() => {
+        async function cargarNombres() {
+
+            try {
+
+                const respuesta = await fetch("/api/grupo/participantes");
+
+                if (!respuesta.ok) {
+                    throw new Error("Error al obtener los participantes");
+                }
+
+                const datos = await respuesta.json();
+
+                setParticipantes(datos);
+
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+
         cargarNombres();
     }, []);
-
-    async function cargarNombres() {
-
-        try {
-
-            const respuesta = await fetch("/api/grupo/participantes");
-
-            if (!respuesta.ok) {
-                throw new Error("Error al obtener los participantes");
-            }
-
-            const datos = await respuesta.json();
-
-            setParticipantes(datos);
-
-        } catch (error) {
-            console.error("Error:", error);
-        }
-    }
 
     function añadirExclusion() {
 

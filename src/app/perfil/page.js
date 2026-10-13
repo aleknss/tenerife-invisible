@@ -19,15 +19,19 @@ export default function Perfil() {
     const [pregunta, setPregunta] = useState(null);
     const [respuesta, setRespuesta] = useState("");
 
+    const [evento, setEvento] = useState(null);
+    const [marcando, setMarcando] = useState(false);
+
     const [mensaje, setMensaje] = useState("");
     const [error, setError] = useState("");
 
     useEffect(() => {
         async function cargar() {
             try {
-                const [meRes, preguntaRes] = await Promise.all([
+                const [meRes, preguntaRes, estadoRes] = await Promise.all([
                     fetch("/api/me"),
-                    fetch("/api/me/pregunta")
+                    fetch("/api/me/pregunta"),
+                    fetch("/api/estado")
                 ]);
 
                 if (meRes.ok) {
@@ -46,6 +50,10 @@ export default function Perfil() {
                 if (preguntaRes.ok) {
                     const datos = await preguntaRes.json();
                     setPregunta(datos.recibida ?? null);
+                }
+
+                if (estadoRes.ok) {
+                    setEvento(await estadoRes.json());
                 }
             } catch (err) {
                 console.error("Error:", err);
@@ -162,6 +170,36 @@ export default function Perfil() {
         }
     }
 
+    async function marcarListo() {
+
+        setMensaje("");
+        setError("");
+        setMarcando(true);
+
+        try {
+
+            const res = await fetch("/api/me/listo", { method: "POST" });
+            const datos = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                setError(datos.error ?? "No se pudo marcar como listo");
+                return;
+            }
+
+            setMensaje("Marcado como listo");
+            const estadoRes = await fetch("/api/estado");
+            if (estadoRes.ok) {
+                setEvento(await estadoRes.json());
+            }
+
+        } catch (err) {
+            console.error("Error:", err);
+            setError("Error de conexión");
+        } finally {
+            setMarcando(false);
+        }
+    }
+
     return (
         <main className="perfil-page">
 
@@ -259,6 +297,32 @@ export default function Perfil() {
                         </Button>
 
                     </form>
+
+                </Card>
+
+                <Card>
+
+                    <h1>Estado</h1>
+
+                    {evento ? (
+                        <>
+                            <p>
+                                {evento.listos}/{evento.total} listos · evento: {evento.estado}
+                            </p>
+
+                            {evento.estado === "abierto" && (
+                                evento.listo_yo ? (
+                                    <p>Ya estás listo ✅</p>
+                                ) : (
+                                    <Button type="button" disabled={marcando} onClick={marcarListo}>
+                                        {marcando ? "Marcando…" : "Marcar como listo"}
+                                    </Button>
+                                )
+                            )}
+                        </>
+                    ) : (
+                        <p>Cargando…</p>
+                    )}
 
                 </Card>
 

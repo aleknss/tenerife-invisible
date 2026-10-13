@@ -34,9 +34,15 @@ export default async function Perfil() {
         tengo_asignado: Boolean(yo?.asignado_id),
     };
 
+    const hobbies = Array.isArray(me?.hobbies)
+        ? me.hobbies
+        : me?.hobbies
+          ? String(me.hobbies).split(",").map((h) => h.trim())
+          : [];
+
     const perfil = {
         nombre: me?.nombre ?? "",
-        hobbies: me?.hobbies ?? "",
+        hobbies,
         tallas: me?.tallas ?? {},
         palabra_vetada: me?.palabra_vetada ?? "",
     };

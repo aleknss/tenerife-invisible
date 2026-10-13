@@ -163,7 +163,7 @@ test("evento único: sorteo con veto + pregunta anónima", { skip }, async () =>
     .eq("nombre", ADMIN_NOMBRE)
     .single();
 
-  const names = [`${prefix}ba`, `${prefix}bb`, `${prefix}bc`];
+  const names = [`${prefix}ba`, `${prefix}bb`, `${prefix}bc`, `${prefix}bd`];
   const users = [];
 
   try {
@@ -171,7 +171,7 @@ test("evento único: sorteo con veto + pregunta anónima", { skip }, async () =>
 
     // Aislar: borrar cualquier usuario e2e_* residual (tests previos de esta
     // corrida o huérfanos de corridas abortadas) para que el sorteo cubra solo
-    // admin + los 3 de este test.
+    // los usuarios de este test (el admin no participa).
     const { data: residuales } = await supabase
       .from("usuario")
       .select("id")
@@ -244,9 +244,8 @@ test("evento único: sorteo con veto + pregunta anónima", { skip }, async () =>
     const estado2 = (await api("/api/estado", { cookie: adminCookie })).data;
     assert.equal(estado2.estado, "sorteado");
 
-    // asignados de admin + mis 3 usuarios
-    const adminMe = (await api("/api/me", { cookie: adminCookie })).data;
-    const todos = [{ id: adminMe.id, nombre: ADMIN_NOMBRE, cookie: adminCookie }, ...users];
+    // asignados de los usuarios del test (el admin no participa)
+    const todos = [...users];
     const asignadoDe = new Map();
     for (const u of todos) {
       const { asignado } = (await api("/api/me/asignado", { cookie: u.cookie })).data;

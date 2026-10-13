@@ -7,11 +7,7 @@ const FIELDS = [
   "precio",
   "moneda",
   "fecha_entrega",
-  "tematica",
-  "metodo_entrega",
-  "invisible_real",
   "reglas",
-  "umbral_listos",
 ];
 
 export async function GET(req) {

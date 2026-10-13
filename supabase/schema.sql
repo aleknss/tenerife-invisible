@@ -7,7 +7,7 @@ create table if not exists usuario (
   password_hash text not null,
   role text not null default 'user',   -- 'user' | 'admin'
   asignado_id uuid references usuario(id),  -- receptor en claro (B), null hasta el sorteo
-  hobbies text,             -- 3 cosas
+  hobbies jsonb,            -- array de 3 cosas
   tallas jsonb,             -- { camiseta, pantalon, zapato, ... }
   palabra_vetada text,      -- objeto no deseado
   estado text not null default 'pendiente',  -- 'pendiente' | 'listo'
@@ -18,7 +18,13 @@ create table if not exists usuario (
 
 -- Migración idempotente para BD ya creadas:
 alter table usuario add column if not exists asignado_id uuid references usuario(id);
-alter table usuario add column if not exists hobbies text;
+alter table usuario add column if not exists hobbies jsonb;
+alter table usuario alter column hobbies type jsonb
+  using case
+    when hobbies is null then null
+    when left(hobbies::text, 1) = '[' then hobbies::jsonb
+    else to_jsonb(string_to_array(hobbies::text, ', '))
+  end;
 alter table usuario add column if not exists tallas jsonb;
 alter table usuario add column if not exists palabra_vetada text;
 alter table usuario add column if not exists estado text not null default 'pendiente';
@@ -44,14 +50,16 @@ create table if not exists config (
   precio numeric,
   moneda text not null default 'EUR',
   fecha_entrega date,
-  tematica text,
-  metodo_entrega text,                -- presencial / online / correo / ...
-  invisible_real boolean not null default true,
-  reglas text,                        -- texto libre
-  umbral_listos integer,              -- nº de "listos" para habilitar el sorteo
+  reglas text,                        -- texto libre (markdown)
   estado text not null default 'abierto',  -- abierto | sorteado | revelado | cerrado
   created_at timestamptz not null default now()
 );
+
+-- Limpieza de columnas retiradas.
+alter table config drop column if exists tematica;
+alter table config drop column if exists metodo_entrega;
+alter table config drop column if exists invisible_real;
+alter table config drop column if exists umbral_listos;
 
 do $$ begin
   alter table config add constraint config_estado_check check (estado in ('abierto','sorteado','revelado','cerrado'));

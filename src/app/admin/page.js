@@ -25,7 +25,6 @@ export default async function Admin() {
 
     const estado = {
         estado: config?.estado ?? "abierto",
-        umbral_listos: config?.umbral_listos ?? null,
         total: participants.length,
         listos: participants.filter((p) => p.estado === "listo").length,
         listo_yo: yo?.estado === "listo",

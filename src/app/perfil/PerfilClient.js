@@ -9,10 +9,11 @@ import NavBar from "@/components/NavBar/NavBar";
 export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
 
     const [nombre] = useState(me?.nombre ?? "");
-    const [hobbies, setHobbies] = useState(() => {
-        const partes = (me?.hobbies ?? "").split(",").map((h) => h.trim());
-        return [partes[0] ?? "", partes[1] ?? "", partes[2] ?? ""];
-    });
+    const [hobbies, setHobbies] = useState(() => [
+        me?.hobbies?.[0] ?? "",
+        me?.hobbies?.[1] ?? "",
+        me?.hobbies?.[2] ?? "",
+    ]);
     const [palabraVetada, setPalabraVetada] = useState(me?.palabra_vetada ?? "");
     const [tallas, setTallas] = useState({
         camisa: me?.tallas?.camisa ?? "",
@@ -57,7 +58,7 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
                 method: "PATCH",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    hobbies: hobbies.filter((h) => h.trim() !== "").join(", "),
+                    hobbies: hobbies.map((h) => h.trim()).filter(Boolean),
                     palabra_vetada: palabraVetada,
                     tallas
                 })

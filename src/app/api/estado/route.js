@@ -16,7 +16,6 @@ export async function GET(req) {
 
   return NextResponse.json({
     estado: config?.estado ?? "abierto",
-    umbral_listos: config?.umbral_listos ?? null,
     total,
     listos,
     listo_yo: yo?.estado === "listo",

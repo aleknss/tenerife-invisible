@@ -471,8 +471,8 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
                         )}
 
                         <div className="exclusions-list">
-                            {exclusiones.map((exclusion, index) => (
-                                <p key={index}>
+                            {exclusiones.map((exclusion) => (
+                                <p key={`${exclusion.a_id}-${exclusion.b_id}`}>
                                     {exclusion.nombre1} no puede tocar a{" "}
                                     {exclusion.nombre2}
                                 </p>

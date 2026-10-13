@@ -1,0 +1,59 @@
+.perfil-page {
+    min-height: 100vh;
+    box-sizing: border-box;
+
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+
+    background-color: #FFF8F0;
+
+    padding: 40px 20px 110px;
+}
+
+.perfil-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+.perfil-page form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.perfil-page h2 {
+    margin-top: 10px;
+    margin-bottom: 0;
+
+    font-size: 18px;
+    color: #263238;
+}
+
+.perfil-page input {
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 12px;
+
+    border: 1px solid #D9D9D9;
+    border-radius: 10px;
+
+    background-color: #F5F5F5;
+
+    font-size: 16px;
+}
+
+.perfil-page input:focus {
+    outline: none;
+    border-color: #E85D5D;
+}
+
+.pregunta {
+    padding: 12px;
+    margin: 0;
+
+    background-color: #F5F5F5;
+    border-radius: 10px;
+}

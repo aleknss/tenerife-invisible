@@ -1,0 +1,137 @@
+.regalo-page {
+    min-height: 100vh;
+    box-sizing: border-box;
+
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+
+    background-color: #FFF8F0;
+
+    padding: 40px 20px 110px;
+}
+
+.regalo-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+/* Títulos */
+
+.regalo-page h1 {
+    margin: 0 0 10px;
+
+    color: #263238;
+    font-size: 26px;
+}
+
+.regalo-page h2 {
+    margin-top: 18px;
+    margin-bottom: 6px;
+
+    color: #263238;
+    font-size: 17px;
+    font-weight: 700;
+}
+
+/* Texto */
+
+.regalo-page p {
+    margin: 5px 0;
+
+    color: #4F5B61;
+    font-size: 15px;
+    line-height: 1.5;
+}
+
+/* Lista de gustos */
+
+.regalo-page ul {
+    margin: 8px 0 0;
+    padding-left: 20px;
+
+    color: #4F5B61;
+}
+
+.regalo-page li {
+    margin-bottom: 5px;
+}
+
+/* Formulario */
+
+.regalo-page form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.regalo-page input {
+    width: 100%;
+    box-sizing: border-box;
+
+    padding: 13px 14px;
+
+    border: 1px solid #D6D0CA;
+    border-radius: 10px;
+
+    background-color: #FAFAFA;
+
+    color: #263238;
+    font-size: 15px;
+
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.regalo-page input::placeholder {
+    color: #999999;
+}
+
+.regalo-page input:focus {
+    outline: none;
+
+    border-color: #E85D5D;
+
+    box-shadow: 0 0 0 3px rgba(232, 93, 93, 0.12);
+}
+
+/* Mensajes */
+
+.mensajes-recibidos {
+    margin-top: 25px;
+    padding-top: 20px;
+
+    border-top: 1px solid #E5DDD5;
+}
+
+.mensajes-recibidos h2 {
+    margin-top: 0;
+    margin-bottom: 12px;
+}
+
+.mensaje {
+    margin: 0;
+
+    padding: 14px 16px;
+
+    background-color: #FFF8F0;
+
+    border: 1px solid #E5DDD5;
+    border-left: 4px solid #E85D5D;
+
+    border-radius: 8px;
+
+    color: #263238;
+    font-size: 15px;
+    line-height: 1.5;
+
+    box-shadow: 0 2px 6px rgba(38, 50, 56, 0.06);
+}
+
+ h3 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-style: italic;
+    color: #606060;
+ 
+}

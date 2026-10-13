@@ -9,5 +9,5 @@ export async function GET(req) {
   }
 
   const participants = await listParticipants();
-  return NextResponse.json(participants.map((p) => p.nombre));
+  return NextResponse.json(participants.map((p) => ({ id: p.id, nombre: p.nombre })));
 }

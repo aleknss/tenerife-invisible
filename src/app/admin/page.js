@@ -8,7 +8,7 @@ import NavBar from "@/components/NavBar/NavBar";
 
 export default function Admin() {
 
-    const [nombres, setNombres] = useState([]);
+    const [participantes, setParticipantes] = useState([]);
 
     const [exclusiones, setExclusiones] = useState([]);
     const [mostrarFormulario, setMostrarFormulario] = useState(false);
@@ -32,7 +32,7 @@ export default function Admin() {
 
             const datos = await respuesta.json();
 
-            setNombres(datos);
+            setParticipantes(datos);
 
         } catch (error) {
             console.error("Error:", error);
@@ -49,11 +49,20 @@ export default function Admin() {
             return;
         }
 
+        const p1 = participantes.find((p) => p.id === persona1);
+        const p2 = participantes.find((p) => p.id === persona2);
+
+        if (!p1 || !p2) {
+            return;
+        }
+
         setExclusiones([
             ...exclusiones,
             {
-                persona1: persona1,
-                persona2: persona2
+                a_id: p1.id,
+                b_id: p2.id,
+                nombre1: p1.nombre,
+                nombre2: p2.nombre
             }
         ]);
 
@@ -68,11 +77,29 @@ export default function Admin() {
             return;
         }
 
-        console.log("Enviando a la BDD:", exclusiones);
+        try {
 
-        // to do mandar a bdd
+            for (const exclusion of exclusiones) {
 
-        setExclusiones([]);
+                const respuesta = await fetch("/api/admin/vetos", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({
+                        a_id: exclusion.a_id,
+                        b_id: exclusion.b_id
+                    })
+                });
+
+                if (!respuesta.ok) {
+                    throw new Error("Error al guardar la exclusión");
+                }
+            }
+
+            setExclusiones([]);
+
+        } catch (error) {
+            console.error("Error:", error);
+        }
     }
 
     return (
@@ -101,9 +128,9 @@ export default function Admin() {
                                 Selecciona una persona
                             </option>
 
-                            {nombres.map((nombre) => (
-                                <option key={nombre} value={nombre}>
-                                    {nombre}
+                            {participantes.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                    {p.nombre}
                                 </option>
                             ))}
                         </select>
@@ -120,9 +147,9 @@ export default function Admin() {
                                 Selecciona una persona
                             </option>
 
-                            {nombres.map((nombre) => (
-                                <option key={nombre} value={nombre}>
-                                    {nombre}
+                            {participantes.map((p) => (
+                                <option key={p.id} value={p.id}>
+                                    {p.nombre}
                                 </option>
                             ))}
                         </select>
@@ -137,8 +164,8 @@ export default function Admin() {
                 <div className="exclusions-list">
                     {exclusiones.map((exclusion, index) => (
                         <p key={index}>
-                            {exclusion.persona1} no puede tocar a{" "}
-                            {exclusion.persona2}
+                            {exclusion.nombre1} no puede tocar a{" "}
+                            {exclusion.nombre2}
                         </p>
                     ))}
                 </div>

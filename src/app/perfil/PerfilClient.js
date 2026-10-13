@@ -188,46 +188,6 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
 
                 <Card>
 
-                    <h1><MessageCircle size={22} /> Pregunta del amigo invisible</h1>
-
-                    {pregunta === null ? (
-                        <p>
-                            De momento no te ha preguntado nada.
-                        </p>
-                    ) : (
-                        <>
-                            <p className="pregunta">
-                                {pregunta.texto}
-                            </p>
-
-                            {pregunta.respondida_at ? (
-                                <p className="respuesta">
-                                    {pregunta.respuesta ?? respuesta}
-                                </p>
-                            ) : (
-                                <form onSubmit={responderPregunta}>
-
-                                    <input
-                                        type="text"
-                                        placeholder="Escribe tu respuesta"
-                                        value={respuesta}
-                                        onChange={(e) => setRespuesta(e.target.value)}
-                                        required
-                                    />
-
-                                    <Button disabled={respondiendo}>
-                                        {respondiendo ? "Enviando…" : "Enviar"}
-                                    </Button>
-
-                                </form>
-                            )}
-                        </>
-                    )}
-
-                </Card>
-
-                <Card>
-
                     <h1><User size={22} /> Mi perfil</h1>
 
                     {nombre && <p>Hola, {nombre}</p>}
@@ -235,7 +195,7 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
                     {mensaje && <p className="form-message" role="status">{mensaje}</p>}
                     {error && <p className="form-error" role="alert">{error}</p>}
 
-                    <form onSubmit={guardarPerfil}>
+                    <form onSubmit={guardarPerfil} className="cols">
 
                         <h2><Heart size={15} /> 3 cosas que me gustan</h2>
 
@@ -286,6 +246,55 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
                         </Button>
 
                     </form>
+
+                </Card>
+
+                <Card>
+
+                    <h1><MessageCircle size={22} /> Pregunta del amigo invisible</h1>
+
+                    {pregunta === null ? (
+                        <p>
+                            De momento no te ha preguntado nada.
+                        </p>
+                    ) : (
+                        <>
+                            <div className="qa">
+                                <span className="qa-label">Pregunta</span>
+                                <p className="qa-bubble qa-bubble-q">
+                                    {pregunta.texto}
+                                </p>
+
+                                {pregunta.respondida_at && (
+                                    <>
+                                        <span className="qa-link" />
+                                        <span className="qa-label">Tu respuesta</span>
+                                        <p className="qa-bubble qa-bubble-a">
+                                            {pregunta.respuesta ?? respuesta}
+                                        </p>
+                                    </>
+                                )}
+                            </div>
+
+                            {!pregunta.respondida_at && (
+                                <form onSubmit={responderPregunta}>
+
+                                    <input
+                                        type="text"
+                                        placeholder="Escribe tu respuesta"
+                                        value={respuesta}
+                                        onChange={(e) => setRespuesta(e.target.value)}
+                                        required
+                                    />
+
+                                    <Button disabled={respondiendo}>
+                                        {respondiendo ? "Enviando…" : "Enviar"}
+                                    </Button>
+
+                                </form>
+                            )}
+                        </>
+                    )}
 
                 </Card>
 

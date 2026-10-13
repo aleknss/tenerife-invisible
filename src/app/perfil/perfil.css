@@ -1,13 +1,18 @@
-.pregunta,
-.respuesta {
-    margin: 0;
-    padding: 14px 16px;
+/* El formulario largo se reparte en columnas */
 
-    background-color: var(--surface-2);
-    border: 1px solid var(--line);
-    border-left: 4px solid var(--brand);
-    border-radius: var(--radius-sm);
+.perfil-page form.cols {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
 
-    color: var(--ink);
-    line-height: 1.5;
+.perfil-page form.cols > h2,
+.perfil-page form.cols > button {
+    grid-column: 1 / -1;
+}
+
+@media (max-width: 480px) {
+    .perfil-page form.cols {
+        grid-template-columns: 1fr;
+    }
 }

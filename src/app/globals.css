@@ -185,6 +185,62 @@ h1 {
   color: var(--err);
 }
 
+/* Pregunta / respuesta */
+
+.qa {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+
+  text-align: left;
+}
+
+.qa-label {
+  margin: 0 0 6px;
+
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+
+  color: var(--ink-faint);
+  text-align: left;
+}
+
+.qa-bubble {
+  margin: 0;
+  padding: 14px 16px;
+
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+
+  color: var(--ink);
+  font-size: 15px;
+  line-height: 1.5;
+  text-align: left;
+}
+
+.qa-bubble-q {
+  background-color: var(--surface-2);
+  border-left: 4px solid var(--brand);
+}
+
+.qa-bubble-a {
+  background-color: var(--ok-soft);
+  border-left: 4px solid var(--ok);
+}
+
+.qa-link {
+  align-self: center;
+
+  width: 2px;
+  height: 22px;
+  margin: 6px 0;
+
+  background-color: var(--line-strong);
+  border-radius: 2px;
+}
+
 /* Shell unificado de páginas */
 
 .app-page {
@@ -194,18 +250,29 @@ h1 {
 
   min-height: 100vh;
 
-  padding: 40px 16px 110px;
+  padding: 40px 24px 110px;
 
   background-color: var(--bg);
 }
 
 .app-stack {
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
+  column-width: 460px;
+  column-gap: 22px;
 
   width: 100%;
-  max-width: 560px;
+  max-width: 1180px;
+}
+
+.app-wide {
+  width: 100%;
+  max-width: 1180px;
+}
+
+.app-stack > * {
+  break-inside: avoid;
+
+  width: 100%;
+  margin-bottom: 22px;
 }
 
 /* Motion (entrada de contenido) */

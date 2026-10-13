@@ -1,5 +1,6 @@
 import Card from "@/components/Card/Card";
 import Markdown from "@/components/Markdown/Markdown";
+import { PartyPopper, Calendar, Coins, ScrollText } from "lucide-react";
 import { getConfig } from "@/lib/db";
 import "./grupo.css";
 
@@ -12,36 +13,44 @@ export default async function Grupo() {
     return (
         <main className="app-page grupo-page">
 
-            <div className="app-stack">
+            <div className="app-wide">
 
-            <Card>
+                <Card>
 
-                <h1>{config.nombre || "Amigo invisible"}</h1>
+                    <h1><PartyPopper size={22} /> {config.nombre || "Amigo invisible"}</h1>
 
-                {config.fecha_entrega && (
-                    <>
-                        <h2>Fecha</h2>
-                        <p className="evento-dato">{config.fecha_entrega}</p>
-                    </>
-                )}
+                    <div className="evento-grid">
 
-                {config.precio != null && (
-                    <>
-                        <h2>Precio</h2>
-                        <p className="evento-dato">{config.precio} {config.moneda}</p>
-                    </>
-                )}
+                        <div className="evento-col">
+                            {config.fecha_entrega && (
+                                <>
+                                    <h2><Calendar size={15} /> Fecha</h2>
+                                    <p className="evento-dato">{config.fecha_entrega}</p>
+                                </>
+                            )}
 
-                {config.reglas && (
-                    <>
-                        <h2>Reglas</h2>
-                        <div className="markdown-body">
-                            <Markdown>{config.reglas}</Markdown>
+                            {config.precio != null && (
+                                <>
+                                    <h2><Coins size={15} /> Precio</h2>
+                                    <p className="evento-dato">{config.precio} {config.moneda}</p>
+                                </>
+                            )}
                         </div>
-                    </>
-                )}
 
-            </Card>
+                        <div className="evento-col">
+                            {config.reglas && (
+                                <>
+                                    <h2><ScrollText size={15} /> Reglas</h2>
+                                    <div className="markdown-body">
+                                        <Markdown>{config.reglas}</Markdown>
+                                    </div>
+                                </>
+                            )}
+                        </div>
+
+                    </div>
+
+                </Card>
 
             </div>
 

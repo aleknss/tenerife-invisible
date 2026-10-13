@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Activity, Users, Settings, Ban, UserPlus, Trash2 } from "lucide-react";
 import Markdown from "@/components/Markdown/Markdown";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
@@ -88,6 +89,31 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
             setError("Error de conexión");
         } finally {
             setCreando(false);
+        }
+    }
+
+    async function borrarUsuario(p) {
+        if (!window.confirm(`¿Borrar a ${p.nombre}? Esta acción no se puede deshacer.`)) {
+            return;
+        }
+
+        setMensaje("");
+        setError("");
+
+        try {
+            const res = await fetch(`/api/users/${p.id}`, { method: "DELETE" });
+            const datos = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                setError(datos.error ?? "No se pudo borrar el usuario");
+                return;
+            }
+
+            setMensaje(`Usuario ${p.nombre} borrado`);
+            await recargarParticipantes();
+        } catch (err) {
+            console.error("Error:", err);
+            setError("Error de conexión");
         }
     }
 
@@ -246,246 +272,256 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
     }
 
     return (
-        <main className="admin-page">
+        <main className="app-page">
 
-            <div className="admin-bento">
+            <div className="app-stack">
 
                 {(mensaje || error) && (
                     <div
-                        className={`bento-alert ${error ? "bento-alert-error" : ""}`}
+                        className={`page-alert ${error ? "page-alert-error" : ""}`}
                         role={error ? "alert" : "status"}
                     >
                         {error || mensaje}
                     </div>
                 )}
 
-                <section className="bento-item bento-estado">
-                    <Card>
+                <Card>
 
-                        <h2>Estado</h2>
+                    <h1><Activity size={22} /> Estado</h1>
 
-                        {estado ? (
-                            <>
-                                <p className="estado-num">
-                                    {estado.listos}<span>/{estado.total}</span>
-                                </p>
-                                <p className="estado-badge">{estado.estado}</p>
-                            </>
-                        ) : (
-                            <p>Cargando…</p>
+                    {estado ? (
+                        <>
+                            <p className="estado-num">
+                                {estado.listos}<span>/{estado.total}</span>
+                            </p>
+                            <p className="estado-badge">{estado.estado}</p>
+                        </>
+                    ) : (
+                        <p>Cargando…</p>
+                    )}
+
+                    <Button type="button" onClick={sortearAhora} disabled={sorteando}>
+                        {sorteando ? "Sorteando…" : "Sortear"}
+                    </Button>
+
+                </Card>
+
+                <Card>
+
+                    <h1><Users size={22} /> Participantes</h1>
+
+                    <p className="estado-num">{participantes.length}</p>
+
+                    <ul className="participantes-lista">
+                        {participantes.length === 0 && (
+                            <li className="participantes-vacio">Sin participantes</li>
                         )}
 
-                        <Button type="button" onClick={sortearAhora} disabled={sorteando}>
-                            {sorteando ? "Sorteando…" : "Sortear"}
+                        {participantes.map((p) => (
+                            <li key={p.id}>
+                                <span>{p.nombre}</span>
+
+                                <button
+                                    type="button"
+                                    className="icon-btn"
+                                    onClick={() => borrarUsuario(p)}
+                                    aria-label={`Borrar ${p.nombre}`}
+                                    title="Borrar"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+
+                    <h2><UserPlus size={15} /> Añadir participante</h2>
+
+                    <form onSubmit={crearUsuario} className="config-form">
+
+                        <label className="field">
+                            <span>Nombre</span>
+                            <input
+                                type="text"
+                                placeholder="Nombre"
+                                value={nuevoNombre}
+                                onChange={(e) => setNuevoNombre(e.target.value)}
+                            />
+                        </label>
+
+                        <label className="field">
+                            <span>Contraseña</span>
+                            <input
+                                type="password"
+                                placeholder="Contraseña"
+                                value={nuevoPassword}
+                                onChange={(e) => setNuevoPassword(e.target.value)}
+                            />
+                        </label>
+
+                        <label className="field">
+                            <span>Rol</span>
+                            <select
+                                value={nuevoRole}
+                                onChange={(e) => setNuevoRole(e.target.value)}
+                            >
+                                <option value="user">user</option>
+                                <option value="admin">admin</option>
+                            </select>
+                        </label>
+
+                        <Button type="submit" disabled={creando}>
+                            {creando ? "Creando…" : "Crear participante"}
                         </Button>
 
-                    </Card>
-                </section>
+                    </form>
 
-                <section className="bento-item bento-participantes">
-                    <Card>
+                </Card>
 
-                        <h2>Participantes</h2>
+                <Card>
 
-                        <p className="estado-num">{participantes.length}</p>
+                    <h1><Settings size={22} /> Configuración del evento</h1>
 
-                        <p className="participantes-nombres">
-                            {participantes.map((p) => p.nombre).join(" · ") || "Sin participantes"}
-                        </p>
-
-                        <h3>Añadir participante</h3>
-
-                        <form onSubmit={crearUsuario} className="config-form">
+                    {config && (
+                        <form onSubmit={guardarConfig} className="config-form">
 
                             <label className="field">
                                 <span>Nombre</span>
                                 <input
                                     type="text"
-                                    placeholder="Nombre"
-                                    value={nuevoNombre}
-                                    onChange={(e) => setNuevoNombre(e.target.value)}
+                                    placeholder="Nombre del evento"
+                                    value={config.nombre ?? ""}
+                                    onChange={(e) => cambiarConfig("nombre", e.target.value)}
                                 />
                             </label>
 
+                            <div className="field-row">
+                                <label className="field">
+                                    <span>Precio</span>
+                                    <input
+                                        type="number"
+                                        placeholder="0"
+                                        value={config.precio ?? ""}
+                                        onChange={(e) => cambiarConfig("precio", e.target.value)}
+                                    />
+                                </label>
+
+                                <label className="field">
+                                    <span>Moneda</span>
+                                    <input
+                                        type="text"
+                                        placeholder="EUR"
+                                        value={config.moneda ?? ""}
+                                        onChange={(e) => cambiarConfig("moneda", e.target.value)}
+                                    />
+                                </label>
+                            </div>
+
                             <label className="field">
-                                <span>Contraseña</span>
+                                <span>Fecha de entrega</span>
                                 <input
-                                    type="password"
-                                    placeholder="Contraseña"
-                                    value={nuevoPassword}
-                                    onChange={(e) => setNuevoPassword(e.target.value)}
+                                    type="date"
+                                    value={config.fecha_entrega ?? ""}
+                                    onChange={(e) => cambiarConfig("fecha_entrega", e.target.value)}
                                 />
                             </label>
 
                             <label className="field">
-                                <span>Rol</span>
-                                <select
-                                    value={nuevoRole}
-                                    onChange={(e) => setNuevoRole(e.target.value)}
-                                >
-                                    <option value="user">user</option>
-                                    <option value="admin">admin</option>
-                                </select>
+                                <span>Reglas (Markdown)</span>
+                                <div className="markdown-editor">
+                                    <textarea
+                                        placeholder={"# Título\n- punto\n**negrita** `código`"}
+                                        value={config.reglas ?? ""}
+                                        onChange={(e) => cambiarConfig("reglas", e.target.value)}
+                                    />
+                                    <div className="markdown-preview markdown-body">
+                                        {config.reglas ? (
+                                            <Markdown>{config.reglas}</Markdown>
+                                        ) : (
+                                            <p className="markdown-placeholder">Vista previa</p>
+                                        )}
+                                    </div>
+                                </div>
                             </label>
 
-                            <Button type="submit" disabled={creando}>
-                                {creando ? "Creando…" : "Crear participante"}
+                            <Button type="submit" disabled={guardandoConfig}>
+                                {guardandoConfig ? "Guardando…" : "Guardar configuración"}
                             </Button>
 
                         </form>
+                    )}
 
-                    </Card>
-                </section>
+                </Card>
 
-                <section className="bento-item bento-config">
-                    <Card>
+                <Card>
 
-                        <h2>Configuración del evento</h2>
+                    <h1><Ban size={22} /> Exclusiones</h1>
 
-                        {config && (
-                            <form onSubmit={guardarConfig} className="config-form">
+                    {!mostrarFormulario && (
+                        <Button type="button" onClick={() => setMostrarFormulario(true)}>
+                            Añadir exclusión
+                        </Button>
+                    )}
 
-                                <label className="field">
-                                    <span>Nombre</span>
-                                    <input
-                                        type="text"
-                                        placeholder="Nombre del evento"
-                                        value={config.nombre ?? ""}
-                                        onChange={(e) => cambiarConfig("nombre", e.target.value)}
-                                    />
-                                </label>
+                    {mostrarFormulario && (
+                        <div className="exclusion-form">
 
-                                <div className="field-row">
-                                    <label className="field">
-                                        <span>Precio</span>
-                                        <input
-                                            type="number"
-                                            placeholder="0"
-                                            value={config.precio ?? ""}
-                                            onChange={(e) => cambiarConfig("precio", e.target.value)}
-                                        />
-                                    </label>
+                            <select
+                                value={persona1}
+                                onChange={(e) => setPersona1(e.target.value)}
+                            >
+                                <option value="">
+                                    Selecciona una persona
+                                </option>
 
-                                    <label className="field">
-                                        <span>Moneda</span>
-                                        <input
-                                            type="text"
-                                            placeholder="EUR"
-                                            value={config.moneda ?? ""}
-                                            onChange={(e) => cambiarConfig("moneda", e.target.value)}
-                                        />
-                                    </label>
-                                </div>
+                                {participantes.map((p) => (
+                                    <option key={p.id} value={p.id}>
+                                        {p.nombre}
+                                    </option>
+                                ))}
+                            </select>
 
-                                <label className="field">
-                                    <span>Fecha de entrega</span>
-                                    <input
-                                        type="date"
-                                        value={config.fecha_entrega ?? ""}
-                                        onChange={(e) => cambiarConfig("fecha_entrega", e.target.value)}
-                                    />
-                                </label>
+                            <span>
+                                no puede tocar a
+                            </span>
 
-                                <label className="field">
-                                    <span>Reglas (Markdown)</span>
-                                    <div className="markdown-editor">
-                                        <textarea
-                                            placeholder={"# Título\n- punto\n**negrita** `código`"}
-                                            value={config.reglas ?? ""}
-                                            onChange={(e) => cambiarConfig("reglas", e.target.value)}
-                                        />
-                                        <div className="markdown-preview markdown-body">
-                                            {config.reglas ? (
-                                                <Markdown>{config.reglas}</Markdown>
-                                            ) : (
-                                                <p className="markdown-placeholder">Vista previa</p>
-                                            )}
-                                        </div>
-                                    </div>
-                                </label>
+                            <select
+                                value={persona2}
+                                onChange={(e) => setPersona2(e.target.value)}
+                            >
+                                <option value="">
+                                    Selecciona una persona
+                                </option>
 
-                                <Button type="submit" disabled={guardandoConfig}>
-                                    {guardandoConfig ? "Guardando…" : "Guardar configuración"}
-                                </Button>
+                                {participantes.map((p) => (
+                                    <option key={p.id} value={p.id}>
+                                        {p.nombre}
+                                    </option>
+                                ))}
+                            </select>
 
-                            </form>
-                        )}
-
-                    </Card>
-                </section>
-
-                <section className="bento-item bento-exclusiones">
-                    <Card>
-
-                        <h2>Exclusiones</h2>
-
-                        {!mostrarFormulario && (
-                            <Button type="button" onClick={() => setMostrarFormulario(true)}>
-                                Añadir exclusión
+                            <Button type="button" onClick={añadirExclusion}>
+                                Añadir
                             </Button>
-                        )}
 
-                        {mostrarFormulario && (
-                            <div className="exclusion-form">
-
-                                <select
-                                    value={persona1}
-                                    onChange={(e) => setPersona1(e.target.value)}
-                                >
-                                    <option value="">
-                                        Selecciona una persona
-                                    </option>
-
-                                    {participantes.map((p) => (
-                                        <option key={p.id} value={p.id}>
-                                            {p.nombre}
-                                        </option>
-                                    ))}
-                                </select>
-
-                                <span>
-                                    no puede tocar a
-                                </span>
-
-                                <select
-                                    value={persona2}
-                                    onChange={(e) => setPersona2(e.target.value)}
-                                >
-                                    <option value="">
-                                        Selecciona una persona
-                                    </option>
-
-                                    {participantes.map((p) => (
-                                        <option key={p.id} value={p.id}>
-                                            {p.nombre}
-                                        </option>
-                                    ))}
-                                </select>
-
-                                <Button type="button" onClick={añadirExclusion}>
-                                    Añadir
-                                </Button>
-
-                            </div>
-                        )}
-
-                        <div className="exclusions-list">
-                            {exclusiones.map((exclusion) => (
-                                <p key={`${exclusion.a_id}-${exclusion.b_id}`}>
-                                    {exclusion.nombre1} no puede tocar a{" "}
-                                    {exclusion.nombre2}
-                                </p>
-                            ))}
                         </div>
+                    )}
 
-                        {exclusiones.length > 0 && (
-                            <Button type="button" onClick={confirmarExclusiones} disabled={guardandoVetos}>
-                                {guardandoVetos ? "Guardando…" : "Confirmar"}
-                            </Button>
-                        )}
+                    <div className="exclusions-list">
+                        {exclusiones.map((exclusion) => (
+                            <p key={`${exclusion.a_id}-${exclusion.b_id}`}>
+                                {exclusion.nombre1} no puede tocar a{" "}
+                                {exclusion.nombre2}
+                            </p>
+                        ))}
+                    </div>
 
-                    </Card>
-                </section>
+                    {exclusiones.length > 0 && (
+                        <Button type="button" onClick={confirmarExclusiones} disabled={guardandoVetos}>
+                            {guardandoVetos ? "Guardando…" : "Confirmar"}
+                        </Button>
+                    )}
+
+                </Card>
 
             </div>
 

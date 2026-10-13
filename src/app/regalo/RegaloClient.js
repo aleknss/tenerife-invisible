@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Gift, MessageCircle, User, Heart, Ban, Shirt } from "lucide-react";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
 import "./regalo.css";
@@ -68,10 +69,10 @@ export default function RegaloClient({ amigo, viewedAt, enviada }) {
         return (
             <main className="app-page regalo-page">
 
-                <div className="app-stack">
+                <div className="app-wide">
 
                     <Card>
-                        <h1>Tu amigo invisible</h1>
+                        <h1><Gift size={22} /> Tu amigo invisible</h1>
 
                         <p>
                             Todavía no se han elegido las parejas.
@@ -91,16 +92,16 @@ export default function RegaloClient({ amigo, viewedAt, enviada }) {
     return (
         <main className="app-page regalo-page">
 
-            <div className="app-stack">
+            <div className="app-wide regalo-grid">
 
                 <Card>
 
-                    <h1>Tu amigo invisible</h1>
+                    <h1><Gift size={22} /> Tu amigo invisible</h1>
 
-                    <h2>Nombre</h2>
+                    <h2><User size={15} /> Nombre</h2>
                     <p>{amigo.nombre}</p>
 
-                    <h2>Le gusta</h2>
+                    <h2><Heart size={15} /> Le gusta</h2>
                     {gustos.length > 0 ? (
                         <ul>
                             {gustos.map((gusto) => (
@@ -111,10 +112,10 @@ export default function RegaloClient({ amigo, viewedAt, enviada }) {
                         <p>Sin datos todavía.</p>
                     )}
 
-                    <h2>Regalo vetado</h2>
+                    <h2><Ban size={15} /> Regalo vetado</h2>
                     <p>{amigo.palabra_vetada || "Ninguno"}</p>
 
-                    <h2>Tallas</h2>
+                    <h2><Shirt size={15} /> Tallas</h2>
                     <p>Camisa: {amigo.tallas?.camisa || "-"}</p>
                     <p>Pantalón: {amigo.tallas?.pantalon || "-"}</p>
                     <p>Zapatos: {amigo.tallas?.zapatos || "-"}</p>
@@ -123,7 +124,7 @@ export default function RegaloClient({ amigo, viewedAt, enviada }) {
 
                 <Card>
 
-                    <h1>Mensaje</h1>
+                    <h1><MessageCircle size={22} /> Mensaje</h1>
 
                     <h3>Solo tienes una pregunta y no seas muy obvio</h3>
 
@@ -131,17 +132,19 @@ export default function RegaloClient({ amigo, viewedAt, enviada }) {
                     {error && <p className="form-error" role="alert">{error}</p>}
 
                     {preguntaEnviada ? (
-                        <>
-                            <p className="mensaje">
+                        <div className="qa">
+                            <span className="qa-label">Tu pregunta</span>
+                            <p className="qa-bubble qa-bubble-q">
                                 {preguntaEnviada.texto}
                             </p>
 
-                            <h2>Respuesta</h2>
+                            <span className="qa-link" />
 
-                            <p className="mensaje">
-                                {preguntaEnviada.respuesta || "No hay respuesta aún"}
+                            <span className="qa-label">Respuesta</span>
+                            <p className="qa-bubble qa-bubble-a">
+                                {preguntaEnviada.respuesta || "Aún sin respuesta"}
                             </p>
-                        </>
+                        </div>
                     ) : (
                         <form onSubmit={enviarMensaje}>
 

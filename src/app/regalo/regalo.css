@@ -1,3 +1,11 @@
+.regalo-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 22px;
+
+    align-items: start;
+}
+
 .regalo-page h3 {
     margin: 0 0 12px;
 
@@ -27,30 +35,8 @@
     margin-bottom: 5px;
 }
 
-.mensajes-recibidos {
-    margin-top: 22px;
-    padding-top: 20px;
-
-    border-top: 1px solid var(--line);
-}
-
-.mensajes-recibidos h2 {
-    margin-top: 0;
-    margin-bottom: 12px;
-}
-
-.mensaje {
-    margin: 0;
-    padding: 14px 16px;
-
-    background-color: var(--surface-2);
-    border: 1px solid var(--line);
-    border-left: 4px solid var(--brand);
-    border-radius: var(--radius-sm);
-
-    color: var(--ink);
-    font-size: 15px;
-    line-height: 1.5;
-
-    box-shadow: var(--shadow-sm);
+@media (max-width: 720px) {
+    .regalo-grid {
+        grid-template-columns: 1fr;
+    }
 }

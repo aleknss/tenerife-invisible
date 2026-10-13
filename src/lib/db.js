@@ -74,6 +74,37 @@ export async function listUsers() {
   return data;
 }
 
+export async function deleteUser(id) {
+  const supabase = getSupabase();
+
+  const { error: e0 } = await supabase
+    .from("usuario")
+    .update({ asignado_id: null })
+    .eq("asignado_id", id);
+  if (e0) throw e0;
+
+  const { error: e1 } = await supabase
+    .from("veto")
+    .delete()
+    .or(`a_id.eq.${id},b_id.eq.${id}`);
+  if (e1) throw e1;
+
+  const { error: e2 } = await supabase
+    .from("pregunta")
+    .delete()
+    .or(`autor_id.eq.${id},destinatario_id.eq.${id}`);
+  if (e2) throw e2;
+
+  const { error: e3 } = await supabase
+    .from("asignacion")
+    .delete()
+    .or(`dador_id.eq.${id},receptor_id.eq.${id}`);
+  if (e3) throw e3;
+
+  const { error: e4 } = await supabase.from("usuario").delete().eq("id", id);
+  if (e4) throw e4;
+}
+
 export async function markViewed(id) {
   const { error } = await getSupabase()
     .from("usuario")

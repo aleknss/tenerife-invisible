@@ -1,6 +1,5 @@
 import Card from "@/components/Card/Card";
 import Markdown from "@/components/Markdown/Markdown";
-import NavBar from "@/components/NavBar/NavBar";
 import { getConfig } from "@/lib/db";
 import "./grupo.css";
 
@@ -41,8 +40,6 @@ export default async function Grupo() {
                 )}
 
             </Card>
-
-            <NavBar activePage="grupo" />
 
         </main>
     );

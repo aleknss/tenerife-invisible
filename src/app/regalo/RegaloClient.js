@@ -3,7 +3,6 @@
 import { useEffect, useState } from "react";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
-import NavBar from "@/components/NavBar/NavBar";
 import "./regalo.css";
 
 export default function RegaloClient({ amigo, viewedAt, enviada }) {
@@ -80,8 +79,6 @@ export default function RegaloClient({ amigo, viewedAt, enviada }) {
                     </Card>
 
                 </div>
-
-                <NavBar activePage="regalo" />
 
             </main>
         );
@@ -166,8 +163,6 @@ export default function RegaloClient({ amigo, viewedAt, enviada }) {
                 </Card>
 
             </div>
-
-            <NavBar activePage="regalo" />
 
         </main>
     );

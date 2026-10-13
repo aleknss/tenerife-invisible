@@ -4,7 +4,6 @@ import { useState } from "react";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
 import "./perfil.css";
-import NavBar from "@/components/NavBar/NavBar";
 
 export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
 
@@ -348,8 +347,6 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
                 </Card>
 
             </div>
-
-            <NavBar activePage="perfil" />
 
         </main>
     );

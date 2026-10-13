@@ -1,17 +1,26 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import "./NavBar.css";
 
-export default function NavBar({ activePage = "grupo" }) {
+export default function NavBar() {
 
     const router = useRouter();
+    const pathname = usePathname();
+    const activePage = pathname.split("/")[1] || "";
 
     const [isAdmin, setIsAdmin] = useState(false);
+    const comprobado = useRef(false);
 
     useEffect(() => {
+        if (pathname === "/" || comprobado.current) {
+            return;
+        }
+
+        comprobado.current = true;
+
         async function comprobarAdmin() {
             try {
                 const respuesta = await fetch("/api/me");
@@ -26,7 +35,7 @@ export default function NavBar({ activePage = "grupo" }) {
         }
 
         comprobarAdmin();
-    }, []);
+    }, [pathname]);
 
     async function cerrarSesion() {
         try {
@@ -34,7 +43,13 @@ export default function NavBar({ activePage = "grupo" }) {
         } catch (error) {
             console.error("Error:", error);
         }
+        comprobado.current = false;
+        setIsAdmin(false);
         router.replace("/");
+    }
+
+    if (pathname === "/") {
+        return null;
     }
 
     return (

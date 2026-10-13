@@ -5,7 +5,6 @@ import Markdown from "@/components/Markdown/Markdown";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
 import "./admin.css";
-import NavBar from "@/components/NavBar/NavBar";
 
 export default function AdminClient({ participantesIniciales, estadoInicial, configInicial }) {
 
@@ -490,7 +489,6 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
 
             </div>
 
-            <NavBar activePage="admin" />
         </main>
     );
 }

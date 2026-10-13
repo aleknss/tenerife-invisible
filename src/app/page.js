@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
@@ -13,6 +13,23 @@ export default function Home() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [cargando, setCargando] = useState(false);
+
+    useEffect(() => {
+        async function comprobarSesion() {
+            try {
+                const res = await fetch("/api/me");
+                if (!res.ok) {
+                    return;
+                }
+                const datos = await res.json();
+                router.replace(datos.role === "admin" ? "/admin" : "/grupo");
+            } catch (error) {
+                console.error("Error:", error);
+            }
+        }
+
+        comprobarSesion();
+    }, [router]);
 
     async function iniciarSesion(e) {
 
@@ -78,12 +95,12 @@ export default function Home() {
                     />
 
                     {error && (
-                        <p className="login-error" role="alert">
+                        <p className="form-error" role="alert">
                             {error}
                         </p>
                     )}
 
-                    <Button>
+                    <Button disabled={cargando}>
                         {cargando ? "Entrando…" : "Entrar"}
                     </Button>
 

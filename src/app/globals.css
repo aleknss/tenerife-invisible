@@ -58,6 +58,11 @@ font-style: bold;
     line-height: 1.55;
 }
 
+.Card .markdown-body,
+.Card .markdown-body * {
+    text-align: left;
+}
+
 .markdown-body > :first-child { margin-top: 0; }
 .markdown-body > :last-child { margin-bottom: 0; }
 
@@ -77,6 +82,11 @@ font-style: bold;
     margin: 8px 0;
     padding-left: 22px;
 }
+
+.markdown-body ul { list-style: disc; }
+.markdown-body ol { list-style: decimal; }
+.markdown-body ul ul { list-style: circle; }
+.markdown-body ol ol { list-style: lower-alpha; }
 
 .markdown-body li { margin: 4px 0; }
 
@@ -115,4 +125,27 @@ font-style: bold;
 .markdown-body td {
     padding: 6px 10px;
     border: 1px solid #E5DDD5;
+}
+
+/* Mensajes de formulario */
+
+.form-message,
+.form-error {
+    margin: 6px 0 0;
+    padding: 8px 12px;
+
+    border-radius: 8px;
+
+    font-size: 14px;
+    text-align: center;
+}
+
+.form-message {
+    background-color: #E9F7EF;
+    color: #1E7A45;
+}
+
+.form-error {
+    background-color: #FDECEC;
+    color: #C0392B;
 }

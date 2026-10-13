@@ -158,8 +158,8 @@ export default function Regalo() {
 
                     <h3>Solo tienes una pregunta y no seas muy obvio</h3>
 
-                    {mensaje && <p role="status">{mensaje}</p>}
-                    {error && <p className="regalo-error" role="alert">{error}</p>}
+                    {mensaje && <p className="form-message" role="status">{mensaje}</p>}
+                    {error && <p className="form-error" role="alert">{error}</p>}
 
                     {preguntaEnviada ? (
                         <>

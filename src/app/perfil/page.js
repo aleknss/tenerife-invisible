@@ -173,8 +173,8 @@ export default function Perfil() {
 
                     {nombre && <p>Hola, {nombre}</p>}
 
-                    {mensaje && <p role="status">{mensaje}</p>}
-                    {error && <p className="perfil-error" role="alert">{error}</p>}
+                    {mensaje && <p className="form-message" role="status">{mensaje}</p>}
+                    {error && <p className="form-error" role="alert">{error}</p>}
 
                     <form onSubmit={guardarPerfil}>
 

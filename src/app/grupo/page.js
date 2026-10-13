@@ -44,7 +44,7 @@ export default function Grupo() {
                 <h1>{config?.nombre || "Amigo invisible"}</h1>
 
                 {cargando && <p>Cargando…</p>}
-                {error && <p className="grupo-error" role="alert">{error}</p>}
+                {error && <p className="form-error" role="alert">{error}</p>}
 
                 {config && !cargando && (
                     <>

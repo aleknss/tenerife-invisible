@@ -267,7 +267,7 @@ export async function getPreguntaEnviada(autorId) {
 export async function getPreguntaRecibida(destinatarioId) {
   const { data, error } = await getSupabase()
     .from("pregunta")
-    .select("id, texto, respondida_at")
+    .select("id, texto, respuesta, respondida_at")
     .eq("destinatario_id", destinatarioId)
     .maybeSingle();
   if (error) throw error;

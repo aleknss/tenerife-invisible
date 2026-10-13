@@ -71,3 +71,15 @@ export async function getSession(req) {
   if ((user.token_version ?? 0) !== (payload.tv ?? 0)) return null;
   return { sub: payload.sub, nombre: user.nombre, role: user.role };
 }
+
+// Igual que getSession pero para Server Components (lee cookies()).
+export async function getSessionUser() {
+  const store = await cookies();
+  const token = store.get(COOKIE_NAME)?.value;
+  const payload = await verifyToken(token);
+  if (!payload) return null;
+  const user = await getUserById(payload.sub);
+  if (!user) return null;
+  if ((user.token_version ?? 0) !== (payload.tv ?? 0)) return null;
+  return { sub: payload.sub, nombre: user.nombre, role: user.role };
+}

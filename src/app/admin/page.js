@@ -1,8 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import ReactMarkdown from "react-markdown";
-import remarkGfm from "remark-gfm";
+import Markdown from "@/components/Markdown/Markdown";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
 import "./admin.css";
@@ -428,9 +427,7 @@ export default function Admin() {
                                         />
                                         <div className="markdown-preview markdown-body">
                                             {config.reglas ? (
-                                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                                    {config.reglas}
-                                                </ReactMarkdown>
+                                                <Markdown>{config.reglas}</Markdown>
                                             ) : (
                                                 <p className="markdown-placeholder">Vista previa</p>
                                             )}

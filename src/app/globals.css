@@ -41,6 +41,9 @@ main {
     align-items: center;
     background-color: #FFF8F0;
     color: #263238;
+
+    box-sizing: border-box;
+    padding: 24px 16px;
 }
 
 h1{

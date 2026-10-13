@@ -6,7 +6,10 @@
     background-color: #FFFFFF;
     border-radius: 20px;
     padding: 35px;
-    width: 350px;
+
+    box-sizing: border-box;
+    width: 100%;
+    max-width: 560px;
 
     box-shadow: 0 8px 30px rgba(38, 50, 56, 0.12);
 }

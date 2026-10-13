@@ -56,29 +56,33 @@ export default function NavBar() {
     return (
         <nav className="navbar">
 
-            <Link
-                href="/regalo"
-                className={`navbar-item ${activePage === "regalo" ? "active" : ""}`}
-            >
-                <Gift className="navbar-icon" size={22} />
-                <span>Regalo</span>
-            </Link>
+            {!isAdmin && (
+                <>
+                    <Link
+                        href="/regalo"
+                        className={`navbar-item ${activePage === "regalo" ? "active" : ""}`}
+                    >
+                        <Gift className="navbar-icon" size={22} />
+                        <span>Regalo</span>
+                    </Link>
 
-            <Link
-                href="/grupo"
-                className={`navbar-item ${activePage === "grupo" ? "active" : ""}`}
-            >
-                <Users className="navbar-icon" size={22} />
-                <span>Grupo</span>
-            </Link>
+                    <Link
+                        href="/grupo"
+                        className={`navbar-item ${activePage === "grupo" ? "active" : ""}`}
+                    >
+                        <Users className="navbar-icon" size={22} />
+                        <span>Grupo</span>
+                    </Link>
 
-            <Link
-                href="/perfil"
-                className={`navbar-item ${activePage === "perfil" ? "active" : ""}`}
-            >
-                <User className="navbar-icon" size={22} />
-                <span>Perfil</span>
-            </Link>
+                    <Link
+                        href="/perfil"
+                        className={`navbar-item ${activePage === "perfil" ? "active" : ""}`}
+                    >
+                        <User className="navbar-icon" size={22} />
+                        <span>Perfil</span>
+                    </Link>
+                </>
+            )}
 
             {isAdmin && (
                 <Link

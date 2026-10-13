@@ -1,12 +1,22 @@
+import { redirect } from "next/navigation";
 import Card from "@/components/Card/Card";
 import Markdown from "@/components/Markdown/Markdown";
 import { PartyPopper, Calendar, Coins, ScrollText } from "lucide-react";
+import { getSessionUser } from "@/lib/auth";
 import { getConfig } from "@/lib/db";
 import "./grupo.css";
 
 export const dynamic = "force-dynamic";
 
 export default async function Grupo() {
+
+    const session = await getSessionUser();
+    if (!session) {
+        redirect("/");
+    }
+    if (session.role === "admin") {
+        redirect("/admin");
+    }
 
     const config = (await getConfig()) ?? {};
 
@@ -29,10 +39,14 @@ export default async function Grupo() {
                                 </>
                             )}
 
-                            {config.precio != null && (
+                            {(config.precio_min != null || config.precio_max != null) && (
                                 <>
                                     <h2><Coins size={15} /> Precio</h2>
-                                    <p className="evento-dato">{config.precio} {config.moneda}</p>
+                                    <p className="evento-dato">
+                                        {config.precio_min != null && config.precio_max != null
+                                            ? `${config.precio_min}–${config.precio_max} ${config.moneda}`
+                                            : `${config.precio_min ?? config.precio_max} ${config.moneda}`}
+                                    </p>
                                 </>
                             )}
                         </div>

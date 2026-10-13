@@ -245,7 +245,8 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
                     nombre: config.nombre,
-                    precio: aNumero(config.precio),
+                    precio_min: aNumero(config.precio_min),
+                    precio_max: aNumero(config.precio_max),
                     moneda: config.moneda,
                     fecha_entrega: config.fecha_entrega || null,
                     reglas: config.reglas
@@ -396,25 +397,35 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
 
                             <div className="field-row">
                                 <label className="field">
-                                    <span>Precio</span>
+                                    <span>Precio mín.</span>
                                     <input
                                         type="number"
-                                        placeholder="0"
-                                        value={config.precio ?? ""}
-                                        onChange={(e) => cambiarConfig("precio", e.target.value)}
+                                        placeholder="15"
+                                        value={config.precio_min ?? ""}
+                                        onChange={(e) => cambiarConfig("precio_min", e.target.value)}
                                     />
                                 </label>
 
                                 <label className="field">
-                                    <span>Moneda</span>
+                                    <span>Precio máx.</span>
                                     <input
-                                        type="text"
-                                        placeholder="EUR"
-                                        value={config.moneda ?? ""}
-                                        onChange={(e) => cambiarConfig("moneda", e.target.value)}
+                                        type="number"
+                                        placeholder="20"
+                                        value={config.precio_max ?? ""}
+                                        onChange={(e) => cambiarConfig("precio_max", e.target.value)}
                                     />
                                 </label>
                             </div>
+
+                            <label className="field">
+                                <span>Moneda</span>
+                                <input
+                                    type="text"
+                                    placeholder="EUR"
+                                    value={config.moneda ?? ""}
+                                    onChange={(e) => cambiarConfig("moneda", e.target.value)}
+                                />
+                            </label>
 
                             <label className="field">
                                 <span>Fecha de entrega</span>

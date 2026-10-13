@@ -4,7 +4,8 @@ import { getSession } from "@/lib/auth";
 
 const FIELDS = [
   "nombre",
-  "precio",
+  "precio_min",
+  "precio_max",
   "moneda",
   "fecha_entrega",
   "reglas",

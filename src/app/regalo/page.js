@@ -11,6 +11,9 @@ export default async function Regalo() {
     if (!session) {
         redirect("/");
     }
+    if (session.role === "admin") {
+        redirect("/admin");
+    }
 
     const [data, enviada] = await Promise.all([
         getReceptorProfile(session.sub),

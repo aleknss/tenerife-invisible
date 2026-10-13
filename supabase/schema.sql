@@ -47,7 +47,8 @@ end $$;
 create table if not exists config (
   id int primary key default 1 check (id = 1),
   nombre text,
-  precio numeric,
+  precio_min numeric,
+  precio_max numeric,
   moneda text not null default 'EUR',
   fecha_entrega date,
   reglas text,                        -- texto libre (markdown)
@@ -60,6 +61,23 @@ alter table config drop column if exists tematica;
 alter table config drop column if exists metodo_entrega;
 alter table config drop column if exists invisible_real;
 alter table config drop column if exists umbral_listos;
+
+-- Rango de precio (antes columna única "precio").
+alter table config add column if not exists precio_min numeric;
+alter table config add column if not exists precio_max numeric;
+
+do $$ begin
+  if exists (
+    select 1 from information_schema.columns
+    where table_name = 'config' and column_name = 'precio'
+  ) then
+    update config
+      set precio_min = coalesce(precio_min, precio),
+          precio_max = coalesce(precio_max, precio);
+  end if;
+end $$;
+
+alter table config drop column if exists precio;
 
 do $$ begin
   alter table config add constraint config_estado_check check (estado in ('abierto','sorteado','revelado','cerrado'));

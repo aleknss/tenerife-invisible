@@ -17,6 +17,9 @@ export default async function Perfil() {
     if (!session) {
         redirect("/");
     }
+    if (session.role === "admin") {
+        redirect("/admin");
+    }
 
     const [me, recibida, config, participants, yo] = await Promise.all([
         getUserById(session.sub),

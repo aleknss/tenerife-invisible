@@ -5,12 +5,12 @@ import bcrypt from "bcryptjs";
 
 const url = process.env.SUPABASE_URL;
 const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const nombre = process.env.ADMIN_NOMBRE;
-const password = process.env.ADMIN_PASSWORD;
+const nombre = process.env.ADMIN_NOMBRE ?? process.env.E2E_ADMIN_NOMBRE;
+const password = process.env.ADMIN_PASSWORD ?? process.env.E2E_ADMIN_PASSWORD;
 
 if (!url || !key || !nombre || !password) {
   console.error(
-    "Faltan variables: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, ADMIN_NOMBRE, ADMIN_PASSWORD",
+    "Faltan variables: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY y ADMIN_NOMBRE/ADMIN_PASSWORD (o E2E_ADMIN_NOMBRE/E2E_ADMIN_PASSWORD)",
   );
   process.exit(1);
 }

@@ -1,33 +1,52 @@
 .Card {
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 16px;
 
-    background-color: #FFFFFF;
-    border-radius: 20px;
-    padding: 35px;
+    background-color: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-lg);
+    padding: 32px;
 
     box-sizing: border-box;
     width: 100%;
     max-width: 560px;
 
-    box-shadow: 0 8px 30px rgba(38, 50, 56, 0.12);
+    box-shadow: var(--shadow);
 }
 
- 
-.Card input {
+.Card input,
+.Card select,
+.Card textarea {
     width: 100%;
     box-sizing: border-box;
 
-    padding: 12px;
-    
-    background-color: #F5F5F5;
-    border: 1px solid #D9D9D9;
-    border-radius: 10px;
+    padding: 12px 14px;
 
+    background-color: var(--field);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius-sm);
+
+    color: var(--ink);
     font-size: 16px;
+    font-family: inherit;
+
+    transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.Card  * {
-     text-align: center;
+.Card input::placeholder,
+.Card textarea::placeholder {
+    color: var(--ink-faint);
+}
+
+.Card input:focus,
+.Card select:focus,
+.Card textarea:focus {
+    outline: none;
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px var(--brand-soft);
+}
+
+.Card * {
+    text-align: center;
 }

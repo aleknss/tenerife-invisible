@@ -19,14 +19,14 @@ export default async function Grupo() {
                 {config.fecha_entrega && (
                     <>
                         <h2>Fecha</h2>
-                        <p>{config.fecha_entrega}</p>
+                        <p className="evento-dato">{config.fecha_entrega}</p>
                     </>
                 )}
 
                 {config.precio != null && (
                     <>
                         <h2>Precio</h2>
-                        <p>{config.precio} {config.moneda}</p>
+                        <p className="evento-dato">{config.precio} {config.moneda}</p>
                     </>
                 )}
 

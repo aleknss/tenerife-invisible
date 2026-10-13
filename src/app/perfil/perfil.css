@@ -1,20 +1,22 @@
 .perfil-page {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+
     min-height: 100vh;
-    box-sizing: border-box;
-
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-
-    background-color: #FFF8F0;
 
     padding: 40px 20px 110px;
+
+    background-color: var(--bg);
 }
 
 .perfil-cards {
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 22px;
+
+    width: 100%;
+    max-width: 560px;
 }
 
 .perfil-page form {
@@ -23,37 +25,43 @@
     gap: 12px;
 }
 
-.perfil-page h2 {
-    margin-top: 10px;
-    margin-bottom: 0;
+.perfil-page h1 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 
-    font-size: 18px;
-    color: #263238;
-}
-
-.perfil-page input {
-    width: 100%;
-    box-sizing: border-box;
-
-    padding: 12px;
-
-    border: 1px solid #D9D9D9;
-    border-radius: 10px;
-
-    background-color: #F5F5F5;
-
-    font-size: 16px;
-}
-
-.perfil-page input:focus {
-    outline: none;
-    border-color: #E85D5D;
-}
-
-.pregunta {
-    padding: 12px;
     margin: 0;
 
-    background-color: #F5F5F5;
-    border-radius: 10px;
+    color: var(--ink);
+}
+
+.perfil-page h2 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+
+    margin: 14px 0 2px;
+
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+
+    color: var(--ink-faint);
+}
+
+.pregunta,
+.respuesta {
+    margin: 0;
+    padding: 14px 16px;
+
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--brand);
+    border-radius: var(--radius-sm);
+
+    color: var(--ink);
+    line-height: 1.5;
 }

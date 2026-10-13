@@ -1,20 +1,22 @@
 .regalo-page {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+
     min-height: 100vh;
-    box-sizing: border-box;
-
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-
-    background-color: #FFF8F0;
 
     padding: 40px 20px 110px;
+
+    background-color: var(--bg);
 }
 
 .regalo-cards {
     display: flex;
     flex-direction: column;
-    gap: 25px;
+    gap: 22px;
+
+    width: 100%;
+    max-width: 560px;
 }
 
 /* Títulos */
@@ -22,17 +24,28 @@
 .regalo-page h1 {
     margin: 0 0 10px;
 
-    color: #263238;
+    color: var(--ink);
     font-size: 26px;
 }
 
 .regalo-page h2 {
-    margin-top: 18px;
-    margin-bottom: 6px;
+    margin: 18px 0 6px;
 
-    color: #263238;
-    font-size: 17px;
+    font-size: 12px;
     font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+
+    color: var(--ink-faint);
+}
+
+.regalo-page h3 {
+    margin: 0 0 12px;
+
+    color: var(--ink-soft);
+    font-size: 14px;
+    font-style: italic;
+    font-weight: 500;
 }
 
 /* Texto */
@@ -40,7 +53,7 @@
 .regalo-page p {
     margin: 5px 0;
 
-    color: #4F5B61;
+    color: var(--ink-soft);
     font-size: 15px;
     line-height: 1.5;
 }
@@ -51,7 +64,8 @@
     margin: 8px 0 0;
     padding-left: 20px;
 
-    color: #4F5B61;
+    color: var(--ink-soft);
+    text-align: left;
 }
 
 .regalo-page li {
@@ -66,42 +80,13 @@
     gap: 12px;
 }
 
-.regalo-page input {
-    width: 100%;
-    box-sizing: border-box;
-
-    padding: 13px 14px;
-
-    border: 1px solid #D6D0CA;
-    border-radius: 10px;
-
-    background-color: #FAFAFA;
-
-    color: #263238;
-    font-size: 15px;
-
-    transition: border-color 0.2s, box-shadow 0.2s;
-}
-
-.regalo-page input::placeholder {
-    color: #999999;
-}
-
-.regalo-page input:focus {
-    outline: none;
-
-    border-color: #E85D5D;
-
-    box-shadow: 0 0 0 3px rgba(232, 93, 93, 0.12);
-}
-
 /* Mensajes */
 
 .mensajes-recibidos {
-    margin-top: 25px;
+    margin-top: 22px;
     padding-top: 20px;
 
-    border-top: 1px solid #E5DDD5;
+    border-top: 1px solid var(--line);
 }
 
 .mensajes-recibidos h2 {
@@ -111,27 +96,16 @@
 
 .mensaje {
     margin: 0;
-
     padding: 14px 16px;
 
-    background-color: #FFF8F0;
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--brand);
+    border-radius: var(--radius-sm);
 
-    border: 1px solid #E5DDD5;
-    border-left: 4px solid #E85D5D;
-
-    border-radius: 8px;
-
-    color: #263238;
+    color: var(--ink);
     font-size: 15px;
     line-height: 1.5;
 
-    box-shadow: 0 2px 6px rgba(38, 50, 56, 0.06);
-}
-
- h3 {
-    margin-top: 0;
-    margin-bottom: 12px;
-    font-style: italic;
-    color: #606060;
- 
+    box-shadow: var(--shadow-sm);
 }

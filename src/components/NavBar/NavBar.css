@@ -44,8 +44,8 @@
 }
 
 .navbar-icon {
-    font-size: 21px;
-    line-height: 1;
+    width: 22px;
+    height: 22px;
 }
 
 .navbar-item.active {

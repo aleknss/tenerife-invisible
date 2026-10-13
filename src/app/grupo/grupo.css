@@ -1,56 +1,47 @@
 .grupo-page {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+
     min-height: 100vh;
-    box-sizing: border-box;
-
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-
-    background-color: #FFF8F0;
 
     padding: 40px 20px 110px;
-}
 
-.grupo-card {
-    width: 100%;
-    max-width: 450px;
+    background-color: var(--bg);
 }
 
 .grupo-page h1 {
-    margin: 0 0 20px;
-
-    color: #263238;
+    margin: 0 0 8px;
     font-size: 26px;
 }
 
 .grupo-page h2 {
-    margin-top: 18px;
-    margin-bottom: 6px;
+    margin: 18px 0 8px;
 
-    color: #263238;
-    font-size: 17px;
+    font-size: 12px;
     font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+
+    color: var(--ink-faint);
 }
 
 .grupo-page p {
-    margin: 5px 0;
+    margin: 0;
 
-    color: #4F5B61;
+    color: var(--ink-soft);
     font-size: 15px;
     line-height: 1.5;
 }
 
-/* Datos del evento */
-
 .evento-dato {
-    padding: 12px 15px;
+    padding: 14px 16px;
 
-    background-color: #FFF8F0;
+    background-color: var(--surface-2);
+    border: 1px solid var(--line);
+    border-left: 4px solid var(--brand);
+    border-radius: var(--radius-sm);
 
-    border: 1px solid #E5DDD5;
-    border-left: 4px solid #E85D5D;
-
-    border-radius: 8px;
-
-    color: #263238;
+    color: var(--ink);
+    font-weight: 600;
 }

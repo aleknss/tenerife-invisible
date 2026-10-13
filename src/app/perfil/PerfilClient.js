@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { User, KeyRound, Flag, MessageCircle, Heart, Ban, Shirt } from "lucide-react";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
 import "./perfil.css";
@@ -187,7 +188,7 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
 
                 <Card>
 
-                    <h1>Mi perfil</h1>
+                    <h1><User size={22} /> Mi perfil</h1>
 
                     {nombre && <p>Hola, {nombre}</p>}
 
@@ -196,7 +197,7 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
 
                     <form onSubmit={guardarPerfil}>
 
-                        <h2>3 cosas que me gustan</h2>
+                        <h2><Heart size={15} /> 3 cosas que me gustan</h2>
 
                         {hobbies.map((hobby, index) => (
                             <input
@@ -208,7 +209,7 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
                             />
                         ))}
 
-                        <h2>Regalo vetado</h2>
+                        <h2><Ban size={15} /> Regalo vetado</h2>
 
                         <input
                             type="text"
@@ -217,7 +218,7 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
                             onChange={(e) => setPalabraVetada(e.target.value)}
                         />
 
-                        <h2>Tallas</h2>
+                        <h2><Shirt size={15} /> Tallas</h2>
 
                         <input
                             type="text"
@@ -250,7 +251,7 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
 
                 <Card>
 
-                    <h1>Cambiar contraseña</h1>
+                    <h1><KeyRound size={22} /> Cambiar contraseña</h1>
 
                     <form onSubmit={cambiarPassword}>
 
@@ -282,7 +283,7 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
 
                 <Card>
 
-                    <h1>Estado</h1>
+                    <h1><Flag size={22} /> Estado</h1>
 
                     {estadoEvento ? (
                         <>
@@ -308,7 +309,7 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
 
                 <Card>
 
-                    <h1>Pregunta del amigo invisible</h1>
+                    <h1><MessageCircle size={22} /> Pregunta del amigo invisible</h1>
 
                     {pregunta === null ? (
                         <p>

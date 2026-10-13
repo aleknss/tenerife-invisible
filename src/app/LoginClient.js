@@ -2,8 +2,10 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { Gift } from "lucide-react";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
+import "./login.css";
 
 export default function LoginClient() {
 
@@ -51,11 +53,15 @@ export default function LoginClient() {
     }
 
     return (
-        <main>
+        <main className="login-page">
+
+            <div className="login-hero">
+                <Gift className="login-emoji" size={46} />
+                <h1>Chacho Invisible</h1>
+                <p>Reparte ilusión. Sorteo secreto entre tu gente.</p>
+            </div>
 
             <Card>
-
-                <h1>Chacho Invisible</h1>
 
                 <form onSubmit={iniciarSesion}>
 

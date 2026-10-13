@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { Gift, Users, User, Settings, LogOut } from "lucide-react";
 import "./NavBar.css";
 
 export default function NavBar() {
@@ -59,7 +60,7 @@ export default function NavBar() {
                 href="/regalo"
                 className={`navbar-item ${activePage === "regalo" ? "active" : ""}`}
             >
-                <span className="navbar-icon">🎁</span>
+                <Gift className="navbar-icon" size={22} />
                 <span>Regalo</span>
             </Link>
 
@@ -67,7 +68,7 @@ export default function NavBar() {
                 href="/grupo"
                 className={`navbar-item ${activePage === "grupo" ? "active" : ""}`}
             >
-                <span className="navbar-icon">👥</span>
+                <Users className="navbar-icon" size={22} />
                 <span>Grupo</span>
             </Link>
 
@@ -75,7 +76,7 @@ export default function NavBar() {
                 href="/perfil"
                 className={`navbar-item ${activePage === "perfil" ? "active" : ""}`}
             >
-                <span className="navbar-icon">👤</span>
+                <User className="navbar-icon" size={22} />
                 <span>Perfil</span>
             </Link>
 
@@ -84,7 +85,7 @@ export default function NavBar() {
                     href="/admin"
                     className={`navbar-item ${activePage === "admin" ? "active" : ""}`}
                 >
-                    <span className="navbar-icon">⚙️</span>
+                    <Settings className="navbar-icon" size={22} />
                     <span>Admin</span>
                 </Link>
             )}
@@ -94,7 +95,7 @@ export default function NavBar() {
                 className="navbar-item"
                 onClick={cerrarSesion}
             >
-                <span className="navbar-icon">🚪</span>
+                <LogOut className="navbar-icon" size={22} />
                 <span>Salir</span>
             </button>
 

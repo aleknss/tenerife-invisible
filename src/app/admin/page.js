@@ -21,6 +21,11 @@ export default function Admin() {
     const [estado, setEstado] = useState(null);
     const [config, setConfig] = useState(null);
 
+    const [nuevoNombre, setNuevoNombre] = useState("");
+    const [nuevoPassword, setNuevoPassword] = useState("");
+    const [nuevoRole, setNuevoRole] = useState("user");
+    const [creando, setCreando] = useState(false);
+
     const [mensaje, setMensaje] = useState("");
     const [error, setError] = useState("");
 
@@ -58,6 +63,60 @@ export default function Admin() {
         const res = await fetch("/api/estado");
         if (res.ok) {
             setEstado(await res.json());
+        }
+    }
+
+    async function recargarParticipantes() {
+        const res = await fetch("/api/grupo/participantes");
+        if (res.ok) {
+            setParticipantes(await res.json());
+        }
+    }
+
+    async function crearUsuario(e) {
+
+        e.preventDefault();
+
+        setMensaje("");
+        setError("");
+
+        if (!nuevoNombre.trim() || !nuevoPassword) {
+            setError("Nombre y contraseña requeridos");
+            return;
+        }
+
+        setCreando(true);
+
+        try {
+
+            const res = await fetch("/api/users", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    nombre: nuevoNombre.trim(),
+                    password: nuevoPassword,
+                    role: nuevoRole
+                })
+            });
+
+            const datos = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                setError(datos.error ?? "No se pudo crear el usuario");
+                return;
+            }
+
+            setNuevoNombre("");
+            setNuevoPassword("");
+            setNuevoRole("user");
+            setMensaje(`Usuario ${datos.nombre} creado`);
+            await recargarParticipantes();
+
+        } catch (err) {
+            console.error("Error:", err);
+            setError("Error de conexión");
+        } finally {
+            setCreando(false);
         }
     }
 
@@ -250,6 +309,47 @@ export default function Admin() {
                         <p className="participantes-nombres">
                             {participantes.map((p) => p.nombre).join(" · ") || "Sin participantes"}
                         </p>
+
+                        <h3>Añadir participante</h3>
+
+                        <form onSubmit={crearUsuario} className="config-form">
+
+                            <label className="field">
+                                <span>Nombre</span>
+                                <input
+                                    type="text"
+                                    placeholder="Nombre"
+                                    value={nuevoNombre}
+                                    onChange={(e) => setNuevoNombre(e.target.value)}
+                                />
+                            </label>
+
+                            <label className="field">
+                                <span>Contraseña</span>
+                                <input
+                                    type="password"
+                                    placeholder="Contraseña"
+                                    value={nuevoPassword}
+                                    onChange={(e) => setNuevoPassword(e.target.value)}
+                                />
+                            </label>
+
+                            <label className="field">
+                                <span>Rol</span>
+                                <select
+                                    value={nuevoRole}
+                                    onChange={(e) => setNuevoRole(e.target.value)}
+                                >
+                                    <option value="user">user</option>
+                                    <option value="admin">admin</option>
+                                </select>
+                            </label>
+
+                            <Button type="submit" disabled={creando}>
+                                {creando ? "Creando…" : "Crear participante"}
+                            </Button>
+
+                        </form>
 
                     </Card>
                 </section>

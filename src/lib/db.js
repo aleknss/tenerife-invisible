@@ -142,6 +142,7 @@ export async function listParticipants() {
     .select(
       "id, nombre, role, estado, asignado_id, hobbies, tallas, palabra_vetada, viewed_at",
     )
+    .eq("role", "user")
     .order("nombre", { ascending: true });
   if (error) throw error;
   return data;

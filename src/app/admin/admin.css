@@ -153,6 +153,7 @@
 }
 
 .config-form input,
+.config-form select,
 .config-form textarea {
     width: 100%;
     box-sizing: border-box;

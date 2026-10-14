@@ -99,6 +99,19 @@
     background-color: var(--err-soft);
 }
 
+.icon-btn.neutral {
+    color: var(--ink-soft);
+}
+
+.icon-btn.neutral:hover {
+    background-color: var(--surface-2);
+}
+
+.row-actions {
+    display: inline-flex;
+    gap: 2px;
+}
+
 /* Formularios */
 
 .config-form {

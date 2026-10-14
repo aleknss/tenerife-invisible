@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Activity, Users, Settings, Ban, UserPlus, Trash2 } from "lucide-react";
+import { Activity, Users, Settings, Ban, UserPlus, Trash2, Pencil, KeyRound } from "lucide-react";
 import Markdown from "@/components/Markdown/Markdown";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
@@ -139,6 +139,79 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
             setMensaje(`Usuario ${p.nombre} borrado`);
             await recargarParticipantes();
             await recargarMetricas();
+        } catch (err) {
+            console.error("Error:", err);
+            setError("Error de conexión");
+        }
+    }
+
+    async function renombrarUsuario(p) {
+
+        const nombre = window.prompt(`Nuevo nombre para ${p.nombre}`, p.nombre);
+        if (nombre === null) {
+            return;
+        }
+
+        const limpio = nombre.trim();
+        if (!limpio || limpio === p.nombre) {
+            return;
+        }
+
+        setMensaje("");
+        setError("");
+
+        try {
+            const res = await fetch(`/api/users/${p.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ nombre: limpio })
+            });
+
+            const datos = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                setError(datos.error ?? "No se pudo renombrar");
+                return;
+            }
+
+            setMensaje(`Usuario renombrado a ${limpio}`);
+            await recargarParticipantes();
+            await recargarVetos();
+        } catch (err) {
+            console.error("Error:", err);
+            setError("Error de conexión");
+        }
+    }
+
+    async function resetearPassword(p) {
+
+        const password = window.prompt(`Nueva contraseña para ${p.nombre} (mín. 6)`, "");
+        if (password === null) {
+            return;
+        }
+        if (password.length < 6) {
+            setError("La contraseña debe tener al menos 6 caracteres");
+            return;
+        }
+
+        setMensaje("");
+        setError("");
+
+        try {
+            const res = await fetch(`/api/users/${p.id}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ password })
+            });
+
+            const datos = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                setError(datos.error ?? "No se pudo cambiar la contraseña");
+                return;
+            }
+
+            setMensaje(`Contraseña de ${p.nombre} actualizada`);
         } catch (err) {
             console.error("Error:", err);
             setError("Error de conexión");
@@ -451,15 +524,37 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
                             <li key={p.id}>
                                 <span>{p.nombre}</span>
 
-                                <button
-                                    type="button"
-                                    className="icon-btn"
-                                    onClick={() => borrarUsuario(p)}
-                                    aria-label={`Borrar ${p.nombre}`}
-                                    title="Borrar"
-                                >
-                                    <Trash2 size={16} />
-                                </button>
+                                <span className="row-actions">
+                                    <button
+                                        type="button"
+                                        className="icon-btn neutral"
+                                        onClick={() => renombrarUsuario(p)}
+                                        aria-label={`Renombrar ${p.nombre}`}
+                                        title="Renombrar"
+                                    >
+                                        <Pencil size={16} />
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        className="icon-btn neutral"
+                                        onClick={() => resetearPassword(p)}
+                                        aria-label={`Cambiar contraseña de ${p.nombre}`}
+                                        title="Cambiar contraseña"
+                                    >
+                                        <KeyRound size={16} />
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        className="icon-btn"
+                                        onClick={() => borrarUsuario(p)}
+                                        aria-label={`Borrar ${p.nombre}`}
+                                        title="Borrar"
+                                    >
+                                        <Trash2 size={16} />
+                                    </button>
+                                </span>
                             </li>
                         ))}
                     </ul>

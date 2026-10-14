@@ -77,9 +77,26 @@ main {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: var(--bg);
   color: var(--ink);
   padding: 24px 16px;
+}
+
+/* Silueta del Teide (fondo decorativo) */
+
+.teide-watermark {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: -1;
+
+  width: 100%;
+  height: auto;
+
+  color: var(--brand);
+  opacity: 0.08;
+
+  pointer-events: none;
 }
 
 h1 {
@@ -256,8 +273,6 @@ h1 {
   min-height: 100vh;
 
   padding: 40px 24px 110px;
-
-  background-color: var(--bg);
 }
 
 .app-stack {

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Gift } from "lucide-react";
+import Tajinaste from "@/components/Tajinaste/Tajinaste";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
 import "./login.css";
@@ -51,7 +51,7 @@ export default function LoginClient() {
   return (
     <main className="login-page">
       <div className="login-hero">
-        <Gift className="login-emoji" size={46} />
+        <Tajinaste className="login-emoji" size={64} />
         <h1>Chacho Invisible</h1>
       </div>
 

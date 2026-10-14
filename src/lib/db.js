@@ -55,6 +55,30 @@ export async function updatePassword(id, passwordHash, tokenVersion) {
   if (error) throw error;
 }
 
+export async function updateUser(id, fields) {
+  const allowed = {};
+  if ("nombre" in fields) allowed.nombre = fields.nombre;
+  if ("role" in fields) allowed.role = fields.role;
+  if (Object.keys(allowed).length === 0) return;
+  const { error } = await getSupabase().from("usuario").update(allowed).eq("id", id);
+  if (error) throw error;
+}
+
+// Reset admin: fija hash nuevo y sube token_version (revoca sesiones del usuario).
+export async function adminSetPassword(id, passwordHash) {
+  const { data: u } = await getSupabase()
+    .from("usuario")
+    .select("token_version")
+    .eq("id", id)
+    .maybeSingle();
+  const token_version = (u?.token_version ?? 0) + 1;
+  const { error } = await getSupabase()
+    .from("usuario")
+    .update({ password_hash: passwordHash, token_version })
+    .eq("id", id);
+  if (error) throw error;
+}
+
 export async function createUser(nombre, passwordHash, role = "user") {
   const { data, error } = await getSupabase()
     .from("usuario")

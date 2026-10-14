@@ -1,5 +1,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import NavBar from "@/components/NavBar/NavBar";
+import Teide from "@/components/Teide/Teide";
+import EasterEggRioja from "@/components/EasterEggRioja/EasterEggRioja";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -24,8 +26,10 @@ export default function RootLayout({ children }) {
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
+        <Teide />
         {children}
         <NavBar />
+        <EasterEggRioja />
       </body>
     </html>
   );

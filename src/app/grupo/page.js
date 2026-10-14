@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import Card from "@/components/Card/Card";
 import Markdown from "@/components/Markdown/Markdown";
+import CuentaAtras from "@/components/CuentaAtras/CuentaAtras";
 import { PartyPopper, Calendar, Coins, ScrollText } from "lucide-react";
 import { getSessionUser } from "@/lib/auth";
 import { getConfig } from "@/lib/db";
@@ -36,6 +37,7 @@ export default async function Grupo() {
                                 <>
                                     <h2><Calendar size={15} /> Fecha</h2>
                                     <p className="evento-dato">{config.fecha_entrega}</p>
+                                    <CuentaAtras fecha={config.fecha_entrega} />
                                 </>
                             )}
 

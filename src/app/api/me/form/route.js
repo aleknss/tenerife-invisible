@@ -23,23 +23,34 @@ export async function PATCH(req) {
   const fields = {};
 
   if ("hobbies" in body) {
-    if (body.hobbies !== null && typeof body.hobbies !== "string") {
-      return NextResponse.json({ error: "hobbies inválido" }, { status: 400 });
+    const h = body.hobbies;
+    const esLista = Array.isArray(h) && h.every((x) => typeof x === "string");
+    if (h !== null && typeof h !== "string" && !esLista) {
+      return NextResponse.json(
+        { error: "Los hobbies deben ser un texto o una lista de textos" },
+        { status: 400 }
+      );
     }
-    fields.hobbies = body.hobbies;
+    fields.hobbies = h;
   }
 
   if ("tallas" in body) {
     const t = body.tallas;
     if (t !== null && (typeof t !== "object" || Array.isArray(t))) {
-      return NextResponse.json({ error: "tallas inválido" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Las tallas deben ser un objeto (campo: talla)" },
+        { status: 400 }
+      );
     }
     fields.tallas = t;
   }
 
   if ("palabra_vetada" in body) {
     if (body.palabra_vetada !== null && typeof body.palabra_vetada !== "string") {
-      return NextResponse.json({ error: "palabra_vetada inválida" }, { status: 400 });
+      return NextResponse.json(
+        { error: "La palabra vetada debe ser un texto" },
+        { status: 400 }
+      );
     }
     fields.palabra_vetada = body.palabra_vetada;
   }

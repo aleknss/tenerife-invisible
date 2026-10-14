@@ -326,7 +326,7 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
 
         if (
             !window.confirm(
-                `¿Quitar la exclusión entre ${nombreDe(a_id)} y ${nombreDe(b_id)}?`
+                `¿Quitar la exclusión "${nombreDe(a_id)} no puede regalar a ${nombreDe(b_id)}"?`
             )
         ) {
             return;

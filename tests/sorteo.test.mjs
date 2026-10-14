@@ -27,14 +27,16 @@ test("sin vetos: derangement válido (nadie se autoasigna)", () => {
   assert.equal(receptores.size, ids.length);
 });
 
-test("veto: par prohibido nunca aparece en ningún sentido", () => {
+test("veto: dirección a->b prohibida, b->a permitida", () => {
   const ids = ["a", "b", "c", "d"];
+  let vioInverso = false;
   for (let t = 0; t < 50; t++) {
     const r = sortear(ids, { vetos: [["a", "b"]] });
     assert.equal(r.ok, true);
     assert.notEqual(r.asignacion.get("a"), "b");
-    assert.notEqual(r.asignacion.get("b"), "a");
+    if (r.asignacion.get("b") === "a") vioInverso = true;
   }
+  assert.equal(vioInverso, true, "b->a debe poder ocurrir");
 });
 
 test("veto total sobre un usuario → imposible", () => {

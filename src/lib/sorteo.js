@@ -15,7 +15,6 @@ export function sortear(ids, { vetos = [], previos = [] } = {}) {
     const j = idIndex.get(b);
     if (i === undefined || j === undefined) continue;
     forbidden.add(`${i},${j}`);
-    forbidden.add(`${j},${i}`);
   }
   for (const [d, r] of previos) {
     const i = idIndex.get(d);

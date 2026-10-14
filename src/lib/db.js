@@ -234,18 +234,16 @@ export async function listVetos() {
 }
 
 export async function addVeto(aId, bId) {
-  const [a, b] = aId < bId ? [aId, bId] : [bId, aId];
-  const { error } = await getSupabase().from("veto").insert({ a_id: a, b_id: b });
+  const { error } = await getSupabase().from("veto").insert({ a_id: aId, b_id: bId });
   if (error) throw error;
 }
 
 export async function removeVeto(aId, bId) {
-  const [a, b] = aId < bId ? [aId, bId] : [bId, aId];
   const { error } = await getSupabase()
     .from("veto")
     .delete()
-    .eq("a_id", a)
-    .eq("b_id", b);
+    .eq("a_id", aId)
+    .eq("b_id", bId);
   if (error) throw error;
 }
 

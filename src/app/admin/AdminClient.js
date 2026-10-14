@@ -735,8 +735,7 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
                         {vetos.map((veto) => (
                             <li key={`${veto[0]}-${veto[1]}`}>
                                 <span>
-                                    {nombreDe(veto[0])} y {nombreDe(veto[1])} no
-                                    pueden regalarse entre sí
+                                    {nombreDe(veto[0])} no puede regalar a {nombreDe(veto[1])}
                                 </span>
 
                                 <button
@@ -795,11 +794,6 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
                                 ))}
                             </select>
 
-                            <span>
-                                La exclusión es mutua: ninguna de las dos podrá
-                                regalarle a la otra.
-                            </span>
-
                             <Button type="button" onClick={añadirExclusion}>
                                 Añadir
                             </Button>
@@ -811,8 +805,7 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
                         <div className="exclusions-list">
                             {exclusiones.map((exclusion) => (
                                 <p key={`${exclusion.a_id}-${exclusion.b_id}`}>
-                                    {exclusion.nombre1} y {exclusion.nombre2} no
-                                    pueden regalarse entre sí · sin guardar
+                                    {exclusion.nombre1} no puede regalar a {exclusion.nombre2} · sin guardar
                                 </p>
                             ))}
 

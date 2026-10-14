@@ -81,7 +81,7 @@ do $$ begin
 exception when duplicate_object then null;
 end $$;
 
--- Parejas vetadas (normalizar a_id < b_id en la app).
+-- Vetos direccionales: a_id no puede regalar a b_id.
 create table if not exists veto (
   id bigint generated always as identity primary key,
   a_id uuid not null references usuario(id),

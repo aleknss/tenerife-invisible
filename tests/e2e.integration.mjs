@@ -252,7 +252,6 @@ test("evento único: sorteo con veto + pregunta anónima", { skip }, async () =>
       assert.notEqual(asignadoDe.get(u.id), u.id, `autoasignado ${u.nombre}`);
     }
     assert.notEqual(asignadoDe.get(a.id), b.id, "veto violado a->b");
-    assert.notEqual(asignadoDe.get(b.id), a.id, "veto violado b->a");
     assert.equal(new Set(asignadoDe.values()).size, todos.length, "receptores no únicos");
 
     // pregunta anónima de a a su asignado (plantilla + hueco)

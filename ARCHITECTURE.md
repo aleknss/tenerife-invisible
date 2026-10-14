@@ -8,7 +8,7 @@ Documento para developers. Describe arquitectura, modelo de datos, API y una gu�
 - **Pregunta anónima**: el receptor no ve el autor; el admin **no tiene endpoint** para ver preguntas ni respuestas (solo acceso directo a BD). Cada participante ve solo las suyas. La pregunta se compone de una **plantilla asignada por hash del usuario** + un hueco acotado (dropdown de tema o texto corto filtrado), para no delatar al autor por estilo.
 - **Realtime = polling** (2-3 s) sobre `GET /api/estado`.
 - **Tallas fijas**: `camiseta`, `pantalon`, `zapato`, `gorro`, `guantes` (jsonb libre, la UI decide las claves).
-- **Vetos solo admin** (no hay auto-veto del usuario).
+- **Vetos solo admin** (no hay auto-veto del usuario) y **direccionales** (que A no pueda regalar a B no implica lo contrario).
 - **Re-sorteo** permitido en estado `abierto` y `sorteado` (sobrescribe).
 
 ## Stack (`package.json`)
@@ -87,7 +87,7 @@ El admin se crea con `npm run seed` usando `ADMIN_NOMBRE`/`ADMIN_PASSWORD`. La c
 
 ### Tablas auxiliares
 
-- `veto` — parejas vetadas (`a_id`, `b_id`, normalizadas `a_id < b_id`, `unique(a_id, b_id)`).
+- `veto` — vetos direccionales: `a_id` no puede regalar a `b_id` (`unique(a_id, b_id)`).
 - `pregunta` — anónima para el receptor (una por usuario + las extra que conceda el admin): `autor_id`, `destinatario_id`, `texto`, `respuesta`, `respondida_at`.
 - `asignacion` — historial de sorteos por año (`anio`, `dador_id`, `receptor_id`, `unique(anio, dador_id)`, `unique(anio, receptor_id)`). Sirve para "no repetir el año pasado".
 - `login_attempt` — intentos de login fallidos para el rate limit; índice `(nombre, ip, created_at)`.
@@ -114,7 +114,7 @@ Funciones:
 - `listParticipants()` — todos los usuarios con `asignado_id`, `hobbies`, `tallas`, `palabra_vetada`, `viewed_at`.
 - `getUserState(id)` — `asignado_id` propio.
 - `setParticipantForm(id, fields)` — guarda `hobbies`/`tallas`/`palabra_vetada`.
-- `listVetos` / `addVeto` / `removeVeto` — gestión de vetos (normaliza `a_id < b_id`).
+- `listVetos` / `addVeto` / `removeVeto` — gestión de vetos (direccionales).
 - `getPrevios(anio)` — asignaciones de un año, para evitar repetir.
 - `applySorteo(mapping, anio)` — escribe `asignado_id` por fila y guarda historial en `asignacion`.
 - `getReceptorProfile(dadorId)` — perfil del receptor + `viewed_at` del dador.
@@ -138,7 +138,7 @@ Solo servidor. bcrypt + JWT en cookie httpOnly.
 
 Lógica pura, sin BD. `sortear(ids, { vetos, previos })` devuelve `{ ok, asignacion }` (Map dador→receptor) o `{ ok: false, reason, bloqueado }`.
 
-Algoritmo bipartito (Kuhn aleatorio): nadie se autoasigna, respeta vetos (en ambos sentidos) y no repite asignación del año anterior. Si no hay solución, devuelve qué participante bloquea.
+Algoritmo bipartito (Kuhn aleatorio): nadie se autoasigna, respeta vetos direccionales (`a_id`→`b_id`) y no repite asignación del año anterior. Si no hay solución, devuelve qué participante bloquea.
 
 ## API routes
 
@@ -200,7 +200,7 @@ Todas verifican JWT con `getSession`, salvo `login`. El permiso admin se comprue
 - `GET /api/users` → `[{ id, nombre }]`.
 - `POST /api/users` `{ nombre, password, role }` → `201 { id, nombre, role }`.
 - `GET /api/admin/vetos` → `[[a_id, b_id], ...]`.
-- `POST /api/admin/vetos` `{ a_id, b_id }`; `DELETE /api/admin/vetos` `{ a_id, b_id }`.
+- `POST /api/admin/vetos` `{ a_id, b_id }` (dirigido: `a_id` no puede regalar a `b_id`); `DELETE /api/admin/vetos` `{ a_id, b_id }` (borra esa dirección exacta).
 - `POST /api/admin/sortear` → `200 { ok }` o `400 { error, bloqueado }` (vetos imposibles).
 - `POST /api/admin/pregunta-extra` `{ usuario_id }` → concede +1 pregunta.
 - `GET /api/estado` → estado global del evento.
@@ -239,7 +239,7 @@ GET /api/config
 
 ## Tests
 
-- `tests/sorteo.test.mjs` — 6 tests unitarios de `sorteo.js` (node:test, sin BD ni deps): mínimo 2 participantes, 2 participantes se intercambian, derangement sin vetos, veto respetado en ambos sentidos, veto total imposible, previos no se repiten. `npm test`.
+- `tests/sorteo.test.mjs` — 6 tests unitarios de `sorteo.js` (node:test, sin BD ni deps): mínimo 2 participantes, 2 participantes se intercambian, derangement sin vetos, veto direccional respetado, veto total imposible, previos no se repiten. `npm test`.
 - `tests/e2e.integration.mjs` — 5 tests de integración con `fetch` contra `next dev` y Supabase real: login, rate limit, `/api/me`, cambio de contraseña (revoca cookie vieja) y evento único (form + veto + sortear + asignado + pregunta anónima + respuesta + segunda pregunta 409). Crea usuarios `e2e_*` y los borra al final; el test de evento único limpia residuales antes de sortear para aislar el sorteo. Requiere `npm run dev` y `E2E_*`. `npm run test:e2e`.
 
 ## Flujo completo

@@ -1,0 +1,78 @@
+.creditos-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1100;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 24px;
+
+    background-color: color-mix(in srgb, #1b1b1b 55%, transparent);
+    backdrop-filter: blur(3px);
+
+    animation: creditos-fade 0.2s ease both;
+}
+
+.creditos-card {
+    width: min(360px, 100%);
+    padding: 28px 24px;
+
+    text-align: center;
+
+    background-color: var(--surface);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+
+    animation: creditos-pop 0.25s ease both;
+}
+
+.creditos-foto {
+    width: 120px;
+    height: 120px;
+
+    margin: 0 auto 14px;
+
+    object-fit: cover;
+    border: 3px solid var(--brand-soft);
+    border-radius: 50%;
+
+    display: block;
+}
+
+.creditos-card h2 {
+    margin: 0 0 6px;
+}
+
+.creditos-card p {
+    margin: 2px 0;
+    color: var(--ink-soft);
+}
+
+.creditos-nombres {
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--brand);
+}
+
+.creditos-card form,
+.creditos-card button {
+    margin-top: 18px;
+}
+
+@keyframes creditos-fade {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes creditos-pop {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: none;
+    }
+}

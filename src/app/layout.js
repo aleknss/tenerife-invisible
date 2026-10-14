@@ -2,6 +2,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import NavBar from "@/components/NavBar/NavBar";
 import Teide from "@/components/Teide/Teide";
 import EasterEggRioja from "@/components/EasterEggRioja/EasterEggRioja";
+import Creditos from "@/components/Creditos/Creditos";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,6 +31,7 @@ export default function RootLayout({ children }) {
         {children}
         <NavBar />
         <EasterEggRioja />
+        <Creditos />
       </body>
     </html>
   );

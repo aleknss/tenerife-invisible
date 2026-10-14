@@ -10,7 +10,6 @@ create table if not exists usuario (
   hobbies jsonb,            -- array de 3 cosas
   tallas jsonb,             -- { camiseta, pantalon, zapato, ... }
   palabra_vetada text,      -- objeto no deseado
-  estado text not null default 'pendiente',  -- 'pendiente' | 'listo'
   viewed_at timestamptz,    -- null hasta que ve la animación
   token_version integer not null default 0,
   created_at timestamptz not null default now()
@@ -27,7 +26,6 @@ alter table usuario alter column hobbies type jsonb
   end;
 alter table usuario add column if not exists tallas jsonb;
 alter table usuario add column if not exists palabra_vetada text;
-alter table usuario add column if not exists estado text not null default 'pendiente';
 
 -- Retirada de columnas legacy (opción A / sealed box).
 alter table usuario drop column if exists public_key;
@@ -38,10 +36,8 @@ do $$ begin
 exception when duplicate_object then null;
 end $$;
 
-do $$ begin
-  alter table usuario add constraint usuario_estado_check check (estado in ('pendiente','listo'));
-exception when duplicate_object then null;
-end $$;
+alter table usuario drop constraint if exists usuario_estado_check;
+alter table usuario drop column if exists estado;
 
 -- Configuración única del evento (una sola fila, id = 1).
 create table if not exists config (

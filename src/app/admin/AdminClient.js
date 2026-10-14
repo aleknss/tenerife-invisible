@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Activity, Users, Settings, Ban, UserPlus, Trash2 } from "lucide-react";
 import Markdown from "@/components/Markdown/Markdown";
 import Card from "@/components/Card/Card";
@@ -25,8 +25,11 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
     const [nuevoRole, setNuevoRole] = useState("user");
     const [creando, setCreando] = useState(false);
     const [sorteando, setSorteando] = useState(false);
+    const [limpiando, setLimpiando] = useState(false);
     const [guardandoConfig, setGuardandoConfig] = useState(false);
     const [guardandoVetos, setGuardandoVetos] = useState(false);
+    const [vetos, setVetos] = useState([]);
+    const [metricas, setMetricas] = useState(null);
 
     const [mensaje, setMensaje] = useState("");
     const [error, setError] = useState("");
@@ -43,6 +46,29 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
         if (res.ok) {
             setParticipantes(await res.json());
         }
+    }
+
+    async function recargarVetos() {
+        const res = await fetch("/api/admin/vetos");
+        if (res.ok) {
+            setVetos(await res.json());
+        }
+    }
+
+    async function recargarMetricas() {
+        const res = await fetch("/api/admin/metricas");
+        if (res.ok) {
+            setMetricas(await res.json());
+        }
+    }
+
+    useEffect(() => {
+        recargarVetos();
+        recargarMetricas();
+    }, []);
+
+    function nombreDe(id) {
+        return participantes.find((p) => p.id === id)?.nombre ?? "?";
     }
 
     async function crearUsuario(e) {
@@ -83,6 +109,7 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
             setNuevoRole("user");
             setMensaje(`Usuario ${datos.nombre} creado`);
             await recargarParticipantes();
+            await recargarMetricas();
 
         } catch (err) {
             console.error("Error:", err);
@@ -93,7 +120,7 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
     }
 
     async function borrarUsuario(p) {
-        if (!window.confirm(`¿Borrar a ${p.nombre}? Esta acción no se puede deshacer.`)) {
+        if (!window.confirm(`¿Seguro que borras a ${p.nombre}? Esto no se puede deshacer, chiquillo.`)) {
             return;
         }
 
@@ -111,6 +138,7 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
 
             setMensaje(`Usuario ${p.nombre} borrado`);
             await recargarParticipantes();
+            await recargarMetricas();
         } catch (err) {
             console.error("Error:", err);
             setError("Error de conexión");
@@ -188,7 +216,49 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
 
         setExclusiones([]);
         setMensaje("Exclusiones guardadas");
+        await recargarVetos();
+        await recargarMetricas();
         setGuardandoVetos(false);
+    }
+
+    async function quitarVeto(veto) {
+
+        const [a_id, b_id] = veto;
+
+        if (
+            !window.confirm(
+                `¿Quitar la exclusión entre ${nombreDe(a_id)} y ${nombreDe(b_id)}?`
+            )
+        ) {
+            return;
+        }
+
+        setMensaje("");
+        setError("");
+
+        try {
+
+            const res = await fetch("/api/admin/vetos", {
+                method: "DELETE",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ a_id, b_id })
+            });
+
+            const datos = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                setError(datos.error ?? "No se pudo quitar la exclusión");
+                return;
+            }
+
+            setMensaje("Exclusión eliminada");
+            await recargarVetos();
+            await recargarMetricas();
+
+        } catch (err) {
+            console.error("Error:", err);
+            setError("Error de conexión");
+        }
     }
 
     async function sortearAhora() {
@@ -213,12 +283,49 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
 
             setMensaje("Sorteo realizado");
             await recargarEstado();
+            await recargarMetricas();
 
         } catch (err) {
             console.error("Error:", err);
             setError("Error de conexión");
         } finally {
             setSorteando(false);
+        }
+    }
+
+    async function limpiarSorteo() {
+
+        if (
+            !window.confirm(
+                "¿Deshacer el sorteo? Se borran asignaciones, marcas de visto y todas las preguntas anónimas. Esto no hay quien lo deshaga."
+            )
+        ) {
+            return;
+        }
+
+        setMensaje("");
+        setError("");
+        setLimpiando(true);
+
+        try {
+
+            const res = await fetch("/api/admin/sortear", { method: "DELETE" });
+            const datos = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                setError(datos.error ?? "No se pudo limpiar el sorteo");
+                return;
+            }
+
+            setMensaje("Sorteo deshecho");
+            await recargarEstado();
+            await recargarMetricas();
+
+        } catch (err) {
+            console.error("Error:", err);
+            setError("Error de conexión");
+        } finally {
+            setLimpiando(false);
         }
     }
 
@@ -292,17 +399,39 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
 
                     {estado ? (
                         <>
-                            <p className="estado-num">
-                                {estado.listos}<span>/{estado.total}</span>
-                            </p>
                             <p className="estado-badge">{estado.estado}</p>
+
+                            {metricas && (
+                                <>
+                                    <p>Exclusiones: {metricas.exclusiones}</p>
+
+                                    {estado.estado === "sorteado" && (
+                                        <>
+                                            <p>
+                                                Vistos: {metricas.vistos}/{metricas.total}
+                                            </p>
+                                            <p>Preguntas: {metricas.preguntas}</p>
+
+                                            {metricas.asignados < metricas.total && (
+                                                <p className="page-alert page-alert-error">
+                                                    Asignados: {metricas.asignados}/{metricas.total}
+                                                </p>
+                                            )}
+                                        </>
+                                    )}
+                                </>
+                            )}
                         </>
                     ) : (
-                        <p>Cargando…</p>
+                        <p>Achuchando…</p>
                     )}
 
                     <Button type="button" onClick={sortearAhora} disabled={sorteando}>
                         {sorteando ? "Sorteando…" : "Sortear"}
+                    </Button>
+
+                    <Button type="button" onClick={limpiarSorteo} disabled={limpiando}>
+                        {limpiando ? "Limpiando…" : "Limpiar sorteo"}
                     </Button>
 
                 </Card>
@@ -467,6 +596,31 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
 
                     <h1><Ban size={22} /> Exclusiones</h1>
 
+                    <ul className="participantes-lista">
+                        {vetos.length === 0 && (
+                            <li className="participantes-vacio">Sin exclusiones</li>
+                        )}
+
+                        {vetos.map((veto) => (
+                            <li key={`${veto[0]}-${veto[1]}`}>
+                                <span>
+                                    {nombreDe(veto[0])} y {nombreDe(veto[1])} no
+                                    pueden regalarse entre sí
+                                </span>
+
+                                <button
+                                    type="button"
+                                    className="icon-btn"
+                                    onClick={() => quitarVeto(veto)}
+                                    aria-label="Quitar exclusión"
+                                    title="Quitar"
+                                >
+                                    <Trash2 size={16} />
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+
                     {!mostrarFormulario && (
                         <Button type="button" onClick={() => setMostrarFormulario(true)}>
                             Añadir exclusión
@@ -492,7 +646,7 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
                             </select>
 
                             <span>
-                                no puede tocar a
+                                no puede regalar a
                             </span>
 
                             <select
@@ -510,6 +664,11 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
                                 ))}
                             </select>
 
+                            <span>
+                                La exclusión es mutua: ninguna de las dos podrá
+                                regalarle a la otra.
+                            </span>
+
                             <Button type="button" onClick={añadirExclusion}>
                                 Añadir
                             </Button>
@@ -517,19 +676,19 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
                         </div>
                     )}
 
-                    <div className="exclusions-list">
-                        {exclusiones.map((exclusion) => (
-                            <p key={`${exclusion.a_id}-${exclusion.b_id}`}>
-                                {exclusion.nombre1} no puede tocar a{" "}
-                                {exclusion.nombre2}
-                            </p>
-                        ))}
-                    </div>
-
                     {exclusiones.length > 0 && (
-                        <Button type="button" onClick={confirmarExclusiones} disabled={guardandoVetos}>
-                            {guardandoVetos ? "Guardando…" : "Confirmar"}
-                        </Button>
+                        <div className="exclusions-list">
+                            {exclusiones.map((exclusion) => (
+                                <p key={`${exclusion.a_id}-${exclusion.b_id}`}>
+                                    {exclusion.nombre1} y {exclusion.nombre2} no
+                                    pueden regalarse entre sí · sin guardar
+                                </p>
+                            ))}
+
+                            <Button type="button" onClick={confirmarExclusiones} disabled={guardandoVetos}>
+                                {guardandoVetos ? "Guardando…" : "Confirmar"}
+                            </Button>
+                        </div>
                     )}
 
                 </Card>

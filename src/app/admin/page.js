@@ -26,8 +26,6 @@ export default async function Admin() {
     const estado = {
         estado: config?.estado ?? "abierto",
         total: participants.length,
-        listos: participants.filter((p) => p.estado === "listo").length,
-        listo_yo: yo?.estado === "listo",
         tengo_asignado: Boolean(yo?.asignado_id),
     };
 

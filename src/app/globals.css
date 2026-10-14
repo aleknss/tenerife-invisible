@@ -1,32 +1,37 @@
 @import "tailwindcss";
 
 :root {
-  /* Superficies */
-  --bg: #FFF8F0;
+  /* Superficies (arena / calima) */
+  --bg: #FBF5EC;
   --surface: #FFFFFF;
-  --surface-2: #FBF3EA;
-  --field: #FFFDFB;
+  --surface-2: #F5ECDF;
+  --field: #FFFDF9;
 
-  /* Texto */
-  --ink: #2A2F33;
-  --ink-soft: #5A6570;
-  --ink-faint: #98A2B3;
+  /* Texto (basalto) */
+  --ink: #22282D;
+  --ink-soft: #55606A;
+  --ink-faint: #96A0AC;
 
   /* Líneas */
-  --line: #EDE3D9;
-  --line-strong: #E0D3C6;
+  --line: #EBE0D1;
+  --line-strong: #DCCEBB;
 
-  /* Marca (coral cálido) */
-  --brand: #E85D5D;
-  --brand-strong: #D94848;
-  --brand-press: #B83F3F;
-  --brand-soft: #FDECEC;
+  /* Marca (volcán / Timanfaya) */
+  --brand: #D9552B;
+  --brand-strong: #C24720;
+  --brand-press: #9F3A17;
+  --brand-soft: #FBE7DE;
+
+  /* Identidad canaria (acentos) */
+  --atlantico: #1F6FB2;
+  --aloe: #2E7D4F;
+  --calima: #E0A93B;
 
   /* Estado */
-  --ok: #1E7A45;
-  --ok-soft: #E9F7EF;
+  --ok: #2E7D4F;
+  --ok-soft: #E8F6EE;
   --err: #C0392B;
-  --err-soft: #FDECEC;
+  --err-soft: #FBE7E4;
 
   /* Radios */
   --radius-sm: 10px;

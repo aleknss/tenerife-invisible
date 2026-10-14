@@ -16,7 +16,7 @@ export async function PATCH(req) {
   }
 
   const config = await getConfig();
-  if (config?.estado !== "abierto") {
+  if (config?.estado === "cerrado") {
     return NextResponse.json({ error: "El evento ya no está abierto" }, { status: 409 });
   }
 

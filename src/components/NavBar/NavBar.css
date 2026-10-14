@@ -48,6 +48,25 @@
     height: 22px;
 }
 
+.navbar-icon-wrap {
+    position: relative;
+
+    display: inline-flex;
+}
+
+.navbar-dot {
+    position: absolute;
+    top: -3px;
+    right: -4px;
+
+    width: 11px;
+    height: 11px;
+
+    border-radius: 50%;
+    background-color: var(--brand-strong);
+    border: 2px solid var(--surface);
+}
+
 .navbar-item.active {
     color: var(--brand);
 }

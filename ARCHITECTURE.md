@@ -9,7 +9,6 @@ Documento para developers. Describe arquitectura, modelo de datos, API y una gu�
 - **Realtime = polling** (2-3 s) sobre `GET /api/estado`.
 - **Tallas fijas**: `camiseta`, `pantalon`, `zapato`, `gorro`, `guantes` (jsonb libre, la UI decide las claves).
 - **Vetos solo admin** (no hay auto-veto del usuario).
-- **Umbral "todos listos"**: lo controla el admin desde la UI (contador + `umbral_listos`). El backend **no bloquea** el sorteo si alguien no está listo.
 - **Re-sorteo** permitido en estado `abierto` y `sorteado` (sobrescribe).
 
 ## Stack (`package.json`)
@@ -66,7 +65,6 @@ El admin se crea con `npm run seed` usando `ADMIN_NOMBRE`/`ADMIN_PASSWORD`. La c
 | `hobbies` | text | Intereses, texto libre |
 | `tallas` | jsonb | `{ camiseta, pantalon, zapato, gorro, guantes }` |
 | `palabra_vetada` | text | Objeto no deseado |
-| `estado` | text | `pendiente` o `listo`, constraint `usuario_estado_check` |
 | `viewed_at` | timestamptz | null hasta que ve la animación |
 | `token_version` | integer | Subirla revoca las sesiones |
 | `created_at` | timestamptz | Alta |
@@ -84,7 +82,6 @@ El admin se crea con `npm run seed` usando `ADMIN_NOMBRE`/`ADMIN_PASSWORD`. La c
 | `metodo_entrega` | text | presencial / online / correo / ... |
 | `invisible_real` | bool | Default `true` |
 | `reglas` | text | Texto libre |
-| `umbral_listos` | integer | Nº de "listos" para habilitar el sorteo |
 | `estado` | text | `abierto` / `sorteado` / `revelado` / `cerrado` |
 
 ### Tablas auxiliares
@@ -113,10 +110,9 @@ Funciones:
 - `markViewed(id)` — marca `viewed_at`.
 - `countLoginAttempts` / `recordLoginAttempt` / `clearLoginAttempts` — rate limit.
 - `getConfig()` / `updateConfig(fields)` — fila única del evento.
-- `listParticipants()` — todos los usuarios con `estado`, `asignado_id`, `hobbies`, `tallas`, `palabra_vetada`, `viewed_at`.
-- `getUserState(id)` — `estado` y `asignado_id` propios.
+- `listParticipants()` — todos los usuarios con `asignado_id`, `hobbies`, `tallas`, `palabra_vetada`, `viewed_at`.
+- `getUserState(id)` — `asignado_id` propio.
 - `setParticipantForm(id, fields)` — guarda `hobbies`/`tallas`/`palabra_vetada`.
-- `setListo(id)` — marca `estado = 'listo'`.
 - `listVetos` / `addVeto` / `removeVeto` — gestión de vetos (normaliza `a_id < b_id`).
 - `getPrevios(anio)` — asignaciones de un año, para evitar repetir.
 - `applySorteo(mapping, anio)` — escribe `asignado_id` por fila y guarda historial en `asignacion`.
@@ -152,8 +148,7 @@ Todas verifican JWT con `getSession`, salvo `login`. El permiso admin se comprue
 | `/api/login` | POST | público | bcrypt + rate limit 5 intentos/15 min por (nombre, IP) → 429. Setea cookie, devuelve role |
 | `/api/logout` | POST | autenticado | Borra la cookie |
 | `/api/me` | GET | autenticado | Fila propia (`id`, `nombre`, `role`, `viewed_at`) |
-| `/api/me/form` | PATCH | autenticado | Guarda `hobbies`/`tallas`/`palabra_vetada`. Solo con estado `abierto` |
-| `/api/me/listo` | POST | autenticado | Marca `estado = 'listo'`. Solo con estado `abierto` |
+| `/api/me/form` | PATCH | autenticado | Guarda `hobbies`/`tallas`/`palabra_vetada` |
 | `/api/me/password` | POST | autenticado | Cambia contraseña (verifica actual, sube `token_version`, re-firma sesión) |
 | `/api/me/asignado` | GET | autenticado | Perfil del receptor (`nombre`, `hobbies`, `tallas`, `palabra_vetada`) + `viewed_at` |
 | `/api/me/viewed` | POST | autenticado | Marca `viewed_at` |
@@ -161,7 +156,7 @@ Todas verifican JWT con `getSession`, salvo `login`. El permiso admin se comprue
 | `/api/me/pregunta/respuesta` | POST | autenticado | Responde una pregunta recibida |
 | `/api/users` | GET | autenticado | Lista `id` + `nombre` |
 | `/api/users` | POST | admin | Crea usuario; 400 si `role` inválido; 409 si nombre existe |
-| `/api/estado` | GET | autenticado | `{ estado, umbral_listos, total, listos, listo_yo, tengo_asignado }` |
+| `/api/estado` | GET | autenticado | `{ estado, total, tengo_asignado }` |
 | `/api/config` | GET / PATCH | autenticado / admin | GET: config del evento. PATCH (admin): actualiza campos |
 | `/api/admin/vetos` | GET / POST / DELETE | admin | Lista / añade / quita vetos |
 | `/api/admin/sortear` | POST | admin | Ejecuta `sortear()` con vetos + previos, escribe `asignado_id`, pasa estado a `sorteado`. Permite re-sortear en `abierto`/`sorteado` |
@@ -178,8 +173,7 @@ Todas verifican JWT con `getSession`, salvo `login`. El permiso admin se comprue
 ### Máquina de estados
 
 - Global (`config.estado`): `abierto` → `sorteado` → `revelado` → `cerrado`.
-- Por usuario (`usuario.estado`): `pendiente` → `listo`.
-- Polling: `GET /api/estado` cada 2-3 s devuelve `{ estado, umbral_listos, total, listos, listo_yo, tengo_asignado }`. La UI decide qué pantalla mostrar según `estado` y `tengo_asignado`.
+- Polling: `GET /api/estado` cada 2-3 s devuelve `{ estado, total, tengo_asignado }`. La UI decide qué pantalla mostrar según `estado` y `tengo_asignado`.
 
 ### Endpoints por pantalla
 
@@ -189,8 +183,7 @@ Todas verifican JWT con `getSession`, salvo `login`. El permiso admin se comprue
 **`/` (main, usuario)**
 - `GET /api/estado` → estado global + contador.
 - `GET /api/me` → `{ id, nombre, role, viewed_at }`.
-- `PATCH /api/me/form` `{ hobbies?, tallas?, palabra_vetada? }` (solo `abierto`). `tallas` = objeto `{ camiseta, pantalon, zapato, gorro, guantes }`.
-- `POST /api/me/listo` (solo `abierto`).
+- `PATCH /api/me/form` `{ hobbies?, tallas?, palabra_vetada? }`. `tallas` = objeto `{ camiseta, pantalon, zapato, gorro, guantes }`.
 - `GET /api/me/asignado` → `{ asignado: { id, nombre, hobbies, tallas, palabra_vetada } | null, viewed_at }`.
 - `POST /api/me/viewed` → marcar animación vista.
 - `GET /api/me/pregunta` → `{ enviada, recibida }`.
@@ -207,13 +200,13 @@ Todas verifican JWT con `getSession`, salvo `login`. El permiso admin se comprue
 - `GET /api/admin/vetos` → `[[a_id, b_id], ...]`.
 - `POST /api/admin/vetos` `{ a_id, b_id }`; `DELETE /api/admin/vetos` `{ a_id, b_id }`.
 - `POST /api/admin/sortear` → `200 { ok }` o `400 { error, bloqueado }` (vetos imposibles).
-- `GET /api/estado` → contador de listos para habilitar el botón sortear.
+- `GET /api/estado` → estado global del evento.
 
 ### Formas de datos (shapes)
 
 ```
 GET /api/estado
-{ estado, umbral_listos, total, listos, listo_yo, tengo_asignado }
+{ estado, total, tengo_asignado }
 
 GET /api/me/asignado
 { asignado: { id, nombre, hobbies, tallas, palabra_vetada } | null, viewed_at }
@@ -226,14 +219,13 @@ GET /api/me/pregunta
 
 GET /api/config
 { id, nombre, precio, moneda, fecha_entrega, tematica, metodo_entrega,
-  invisible_real, reglas, umbral_listos, estado, created_at }
+  invisible_real, reglas, estado, created_at }
 ```
 
 ### Notas de implementación
 
 - Las páginas de datos viven en `src/app/` (App Router): `src/app/login/page.jsx`, `src/app/page.js` (main), `src/app/admin/page.jsx`.
 - Middleware pendiente: `src/middleware.js` — proteger `/admin` (solo admin) y `/` (autenticado). Hasta que exista, las páginas deben hacer su propio redirect basado en `/api/me` o `/api/estado`.
-- El sorteo **no** valida "todos listos" en el backend; el admin lo decide con el contador de `/api/estado` + `umbral_listos`.
 
 ## Seed (`scripts/seed.mjs`)
 
@@ -242,23 +234,22 @@ GET /api/config
 ## Tests
 
 - `tests/sorteo.test.mjs` — 6 tests unitarios de `sorteo.js` (node:test, sin BD ni deps): mínimo 2 participantes, 2 participantes se intercambian, derangement sin vetos, veto respetado en ambos sentidos, veto total imposible, previos no se repiten. `npm test`.
-- `tests/e2e.integration.mjs` — 5 tests de integración con `fetch` contra `next dev` y Supabase real: login, rate limit, `/api/me`, cambio de contraseña (revoca cookie vieja) y evento único (form + listo + veto + sortear + asignado + pregunta anónima + respuesta + segunda pregunta 409). Crea usuarios `e2e_*` y los borra al final; el test de evento único limpia residuales antes de sortear para aislar el sorteo. Requiere `npm run dev` y `E2E_*`. `npm run test:e2e`.
+- `tests/e2e.integration.mjs` — 5 tests de integración con `fetch` contra `next dev` y Supabase real: login, rate limit, `/api/me`, cambio de contraseña (revoca cookie vieja) y evento único (form + veto + sortear + asignado + pregunta anónima + respuesta + segunda pregunta 409). Crea usuarios `e2e_*` y los borra al final; el test de evento único limpia residuales antes de sortear para aislar el sorteo. Requiere `npm run dev` y `E2E_*`. `npm run test:e2e`.
 
 ## Flujo completo
 
 1. **Login** — `POST /api/login` valida con bcrypt (rate limit) y setea cookie JWT.
-2. **Formulario** — el usuario hace `PATCH /api/me/form` con hobbies, tallas y palabra vetada (solo `abierto`).
-3. **Listo** — `POST /api/me/listo` marca `estado = 'listo'`.
-4. **Sorteo** — el admin pulsa sortear → `POST /api/admin/sortear` calcula el reparto (Kuhn con vetos + previos) y guarda `asignado_id`. Estado → `sorteado`.
-5. **Reveal** — el usuario hace `GET /api/me/asignado` y ve el perfil de su receptor; `POST /api/me/viewed` marca la animación como vista.
-6. **Pregunta anónima** — el usuario envía `POST /api/me/pregunta` (una sola). El receptor responde `POST /api/me/pregunta/respuesta` sin conocer el autor.
+2. **Formulario** — el usuario hace `PATCH /api/me/form` con hobbies, tallas y palabra vetada.
+3. **Sorteo** — el admin pulsa sortear → `POST /api/admin/sortear` calcula el reparto (Kuhn con vetos + previos) y guarda `asignado_id`. Estado → `sorteado`.
+4. **Reveal** — el usuario hace `GET /api/me/asignado` y ve el perfil de su receptor; `POST /api/me/viewed` marca la animación como vista.
+5. **Pregunta anónima** — el usuario envía `POST /api/me/pregunta` (una sola). El receptor responde `POST /api/me/pregunta/respuesta` sin conocer el autor.
 
 ## Funcionalidades por rol (lógica actual)
 
 **Usuario normal:**
 
 - Iniciar/cerrar sesión.
-- Rellenar hobbies/tallas/palabra vetada y marcar listo.
+- Rellenar hobbies/tallas/palabra vetada.
 - Ver su asignado (perfil del receptor) cuando se sortea.
 - Enviar una pregunta anónima y responder la que reciba.
 - Cambiar su contraseña.
@@ -270,7 +261,7 @@ GET /api/config
 - Configurar el evento (`PATCH /api/config`).
 - Gestionar vetos.
 - Sortear / re-sortear.
-- Ver contador de listos y estado global.
+- Ver estado global.
 
 ## Pendiente
 

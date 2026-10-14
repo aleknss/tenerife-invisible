@@ -4,6 +4,7 @@ import {
   listVetos,
   getPrevios,
   applySorteo,
+  clearSorteo,
   getConfig,
   updateConfig,
 } from "@/lib/db";
@@ -43,6 +44,22 @@ export async function POST(req) {
 
   await applySorteo(result.asignacion, anio);
   await updateConfig({ estado: "sorteado" });
+
+  return NextResponse.json({ ok: true });
+}
+
+// Deshace el sorteo: como si nunca se hubiese sorteado.
+export async function DELETE(req) {
+  const session = await getSession(req);
+  if (!session) {
+    return NextResponse.json({ error: "No autenticado" }, { status: 401 });
+  }
+  if (session.role !== "admin") {
+    return NextResponse.json({ error: "No autorizado" }, { status: 403 });
+  }
+
+  const anio = new Date().getFullYear();
+  await clearSorteo(anio);
 
   return NextResponse.json({ ok: true });
 }

@@ -20,24 +20,19 @@ export default function RegaloClient({ amigo, viewedAt, enviada }) {
             return;
         }
 
-        const duracion = 3200;
+        window.dispatchEvent(new Event("regalo-visto"));
 
-        let vivo = true;
-        const temporizador = setTimeout(async () => {
+        (async () => {
             try {
                 await fetch("/api/me/viewed", { method: "POST" });
             } catch (err) {
                 console.error("Error:", err);
             }
-            if (vivo) {
-                setRevelando(false);
-            }
-        }, duracion);
+        })();
 
-        return () => {
-            vivo = false;
-            clearTimeout(temporizador);
-        };
+        const temporizador = setTimeout(() => setRevelando(false), 3200);
+
+        return () => clearTimeout(temporizador);
     }, [amigo, viewedAt]);
 
     async function enviarMensaje(e) {
@@ -181,7 +176,7 @@ export default function RegaloClient({ amigo, viewedAt, enviada }) {
                 <div className="reveal" role="status" aria-live="polite">
                     <div className="reveal-box">
                         <Gift className="reveal-icon" size={72} />
-                        <p>¡Ya tienes amig@ invisible!</p>
+                        <p>¡Te ha tocao!</p>
                         <span className="reveal-name">¡¡{amigo.nombre}!!</span>
                     </div>
                 </div>

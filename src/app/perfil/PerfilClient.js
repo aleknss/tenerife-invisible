@@ -27,8 +27,7 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
     const [pregunta, setPregunta] = useState(preguntaInicial ?? null);
     const [respuesta, setRespuesta] = useState("");
 
-    const [estadoEvento, setEstadoEvento] = useState(eventoInicial ?? null);
-    const [marcando, setMarcando] = useState(false);
+    const [estadoEvento] = useState(eventoInicial ?? null);
     const [guardando, setGuardando] = useState(false);
     const [cambiandoPass, setCambiandoPass] = useState(false);
     const [respondiendo, setRespondiendo] = useState(false);
@@ -148,36 +147,6 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
             setError("Error de conexión");
         } finally {
             setRespondiendo(false);
-        }
-    }
-
-    async function marcarListo() {
-
-        setMensaje("");
-        setError("");
-        setMarcando(true);
-
-        try {
-
-            const res = await fetch("/api/me/listo", { method: "POST" });
-            const datos = await res.json().catch(() => ({}));
-
-            if (!res.ok) {
-                setError(datos.error ?? "No se pudo marcar como listo");
-                return;
-            }
-
-            setMensaje("Marcado como listo");
-            const estadoRes = await fetch("/api/estado");
-            if (estadoRes.ok) {
-                setEstadoEvento(await estadoRes.json());
-            }
-
-        } catch (err) {
-            console.error("Error:", err);
-            setError("Error de conexión");
-        } finally {
-            setMarcando(false);
         }
     }
 
@@ -335,23 +304,9 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
                     <h1><Flag size={22} /> Estado</h1>
 
                     {estadoEvento ? (
-                        <>
-                            <p>
-                                {estadoEvento.listos}/{estadoEvento.total} listos · evento: {estadoEvento.estado}
-                            </p>
-
-                            {estadoEvento.estado === "abierto" && (
-                                estadoEvento.listo_yo ? (
-                                    <p>Ya estás listo ✅</p>
-                                ) : (
-                                    <Button type="button" disabled={marcando} onClick={marcarListo}>
-                                        {marcando ? "Marcando…" : "Marcar como listo"}
-                                    </Button>
-                                )
-                            )}
-                        </>
+                        <p>Evento: {estadoEvento.estado}</p>
                     ) : (
-                        <p>Cargando…</p>
+                        <p>Achuchando…</p>
                     )}
 
                 </Card>

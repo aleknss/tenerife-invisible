@@ -171,7 +171,7 @@ export async function listParticipants() {
   const { data, error } = await getSupabase()
     .from("usuario")
     .select(
-      "id, nombre, role, estado, asignado_id, hobbies, tallas, palabra_vetada, viewed_at",
+      "id, nombre, role, asignado_id, hobbies, tallas, palabra_vetada, viewed_at",
     )
     .eq("role", "user")
     .order("nombre", { ascending: true });
@@ -182,7 +182,7 @@ export async function listParticipants() {
 export async function getUserState(id) {
   const { data, error } = await getSupabase()
     .from("usuario")
-    .select("estado, asignado_id")
+    .select("asignado_id")
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
@@ -197,14 +197,6 @@ export async function setParticipantForm(id, fields) {
   const { error } = await getSupabase()
     .from("usuario")
     .update(allowed)
-    .eq("id", id);
-  if (error) throw error;
-}
-
-export async function setListo(id) {
-  const { error } = await getSupabase()
-    .from("usuario")
-    .update({ estado: "listo" })
     .eq("id", id);
   if (error) throw error;
 }
@@ -248,10 +240,16 @@ export async function applySorteo(mapping, anio) {
   const supabase = getSupabase();
 
   for (const [dadorId, receptorId] of mapping) {
-    const { error } = await supabase
+    const { data: actual } = await supabase
       .from("usuario")
-      .update({ asignado_id: receptorId, viewed_at: null })
-      .eq("id", dadorId);
+      .select("asignado_id")
+      .eq("id", dadorId)
+      .maybeSingle();
+    const cambia = actual?.asignado_id !== receptorId;
+    const fields = cambia
+      ? { asignado_id: receptorId, viewed_at: null }
+      : { asignado_id: receptorId };
+    const { error } = await supabase.from("usuario").update(fields).eq("id", dadorId);
     if (error) throw error;
   }
 
@@ -265,6 +263,24 @@ export async function applySorteo(mapping, anio) {
   }));
   const { error: ins } = await supabase.from("asignacion").insert(historial);
   if (ins) throw ins;
+}
+
+export async function clearSorteo(anio) {
+  const supabase = getSupabase();
+
+  const { error: e0 } = await supabase
+    .from("usuario")
+    .update({ asignado_id: null, viewed_at: null })
+    .not("id", "is", null);
+  if (e0) throw e0;
+
+  const { error: e1 } = await supabase.from("asignacion").delete().eq("anio", anio);
+  if (e1) throw e1;
+
+  const { error: e2 } = await supabase.from("pregunta").delete().not("id", "is", null);
+  if (e2) throw e2;
+
+  await updateConfig({ estado: "abierto" });
 }
 
 export async function getReceptorProfile(dadorId) {
@@ -310,6 +326,14 @@ export async function createPregunta(autorId, destinatarioId, texto) {
     .from("pregunta")
     .insert({ autor_id: autorId, destinatario_id: destinatarioId, texto });
   if (error) throw error;
+}
+
+export async function countPreguntas() {
+  const { count, error } = await getSupabase()
+    .from("pregunta")
+    .select("id", { count: "exact", head: true });
+  if (error) throw error;
+  return count ?? 0;
 }
 
 export async function responderPregunta(preguntaId, destinatarioId, respuesta) {

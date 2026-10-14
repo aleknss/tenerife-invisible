@@ -13,6 +13,7 @@ export default function NavBar() {
     const activePage = pathname.split("/")[1] || "";
 
     const [isAdmin, setIsAdmin] = useState(false);
+    const [pendiente, setPendiente] = useState(false);
     const comprobado = useRef(false);
 
     useEffect(() => {
@@ -22,21 +23,38 @@ export default function NavBar() {
 
         comprobado.current = true;
 
-        async function comprobarAdmin() {
+        async function comprobar() {
             try {
-                const respuesta = await fetch("/api/me");
-                if (!respuesta.ok) {
-                    return;
+                const [meRes, asignadoRes] = await Promise.all([
+                    fetch("/api/me"),
+                    fetch("/api/me/asignado"),
+                ]);
+
+                if (meRes.ok) {
+                    const datos = await meRes.json();
+                    setIsAdmin(datos.role === "admin");
                 }
-                const datos = await respuesta.json();
-                setIsAdmin(datos.role === "admin");
+
+                if (asignadoRes.ok) {
+                    const datos = await asignadoRes.json();
+                    setPendiente(Boolean(datos.asignado) && !datos.viewed_at);
+                }
             } catch (error) {
                 console.error("Error:", error);
             }
         }
 
-        comprobarAdmin();
+        comprobar();
     }, [pathname]);
+
+    useEffect(() => {
+        function visto() {
+            setPendiente(false);
+        }
+
+        window.addEventListener("regalo-visto", visto);
+        return () => window.removeEventListener("regalo-visto", visto);
+    }, []);
 
     async function cerrarSesion() {
         try {
@@ -62,8 +80,11 @@ export default function NavBar() {
                         href="/regalo"
                         className={`navbar-item ${activePage === "regalo" ? "active" : ""}`}
                     >
-                        <Gift className="navbar-icon" size={22} />
-                        <span>Regalo</span>
+                        <span className="navbar-icon-wrap">
+                            <Gift className="navbar-icon" size={22} />
+                            {pendiente && <span className="navbar-dot" />}
+                        </span>
+                        <span>Mi regalo</span>
                     </Link>
 
                     <Link
@@ -71,7 +92,7 @@ export default function NavBar() {
                         className={`navbar-item ${activePage === "grupo" ? "active" : ""}`}
                     >
                         <Users className="navbar-icon" size={22} />
-                        <span>Grupo</span>
+                        <span>Peña</span>
                     </Link>
 
                     <Link
@@ -79,7 +100,7 @@ export default function NavBar() {
                         className={`navbar-item ${activePage === "perfil" ? "active" : ""}`}
                     >
                         <User className="navbar-icon" size={22} />
-                        <span>Perfil</span>
+                        <span>Mi ficha</span>
                     </Link>
                 </>
             )}

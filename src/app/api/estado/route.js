@@ -11,14 +11,11 @@ export async function GET(req) {
   const config = await getConfig();
   const participants = await listParticipants();
   const total = participants.length;
-  const listos = participants.filter((p) => p.estado === "listo").length;
   const yo = await getUserState(session.sub);
 
   return NextResponse.json({
     estado: config?.estado ?? "abierto",
     total,
-    listos,
-    listo_yo: yo?.estado === "listo",
     tengo_asignado: Boolean(yo?.asignado_id),
   });
 }

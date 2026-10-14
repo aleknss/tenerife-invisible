@@ -202,7 +202,7 @@ test("evento único: sorteo con veto + pregunta anónima", { skip }, async () =>
       users.push({ nombre, id: me.id, cookie });
     }
 
-    // formulario + listo
+    // formulario
     for (const u of users) {
       const { res: f } = await api("/api/me/form", {
         method: "PATCH",
@@ -214,15 +214,11 @@ test("evento único: sorteo con veto + pregunta anónima", { skip }, async () =>
         },
       });
       assert.equal(f.status, 200, `form ${u.nombre}`);
-      const { res: l } = await api("/api/me/listo", { method: "POST", cookie: u.cookie });
-      assert.equal(l.status, 200, `listo ${u.nombre}`);
     }
 
-    // estado: abierto, mis usuarios listo
+    // estado: abierto
     const estado = (await api("/api/estado", { cookie: adminCookie })).data;
     assert.equal(estado.estado, "abierto");
-    const estadoYo = (await api("/api/estado", { cookie: users[0].cookie })).data;
-    assert.equal(estadoYo.listo_yo, true);
 
     // veto entre ba y bb
     const a = users[0];

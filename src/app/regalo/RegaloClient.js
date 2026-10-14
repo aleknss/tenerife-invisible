@@ -9,8 +9,9 @@ import "./regalo.css";
 export default function RegaloClient({ amigo, viewedAt, enviada }) {
 
     const [revelando, setRevelando] = useState(Boolean(amigo) && !viewedAt);
-    const [preguntaEnviada, setPreguntaEnviada] = useState(enviada ?? null);
-    const [texto, setTexto] = useState("");
+    const [enviadas, setEnviadas] = useState(enviada ? [enviada] : []);
+    const [plantilla, setPlantilla] = useState(null);
+    const [valor, setValor] = useState("");
     const [enviando, setEnviando] = useState(false);
     const [mensaje, setMensaje] = useState("");
     const [error, setError] = useState("");
@@ -35,6 +36,30 @@ export default function RegaloClient({ amigo, viewedAt, enviada }) {
         return () => clearTimeout(temporizador);
     }, [amigo, viewedAt]);
 
+    useEffect(() => {
+        let activo = true;
+
+        (async () => {
+            try {
+                const res = await fetch("/api/me/pregunta");
+                if (!res.ok) {
+                    return;
+                }
+                const datos = await res.json();
+                if (activo) {
+                    setEnviadas(datos.enviadas ?? []);
+                    setPlantilla(datos.plantilla ?? null);
+                }
+            } catch (err) {
+                console.error("Error:", err);
+            }
+        })();
+
+        return () => {
+            activo = false;
+        };
+    }, []);
+
     async function enviarMensaje(e) {
 
         e.preventDefault();
@@ -48,7 +73,7 @@ export default function RegaloClient({ amigo, viewedAt, enviada }) {
             const res = await fetch("/api/me/pregunta", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ texto })
+                body: JSON.stringify({ plantilla_id: plantilla?.id, valor })
             });
 
             const datos = await res.json().catch(() => ({}));
@@ -58,8 +83,14 @@ export default function RegaloClient({ amigo, viewedAt, enviada }) {
                 return;
             }
 
-            setPreguntaEnviada({ texto, respuesta: null, respondida_at: null });
-            setTexto("");
+            const fresco = await fetch("/api/me/pregunta")
+                .then((r) => r.json())
+                .catch(() => null);
+            if (fresco) {
+                setEnviadas(fresco.enviadas ?? []);
+                setPlantilla(fresco.plantilla ?? null);
+            }
+            setValor("");
             setMensaje("Mensaje enviado");
 
         } catch (err) {
@@ -131,42 +162,62 @@ export default function RegaloClient({ amigo, viewedAt, enviada }) {
 
                     <h1><MessageCircle size={22} /> Mensaje</h1>
 
-                    <h3>Solo tienes una pregunta y no seas muy obvio</h3>
+                    <h3>Completa la plantilla para preguntar.</h3>
 
                     {mensaje && <p className="form-message" role="status">{mensaje}</p>}
                     {error && <p className="form-error" role="alert">{error}</p>}
 
-                    {preguntaEnviada ? (
-                        <div className="qa">
+                    {enviadas.map((q) => (
+                        <div className="qa" key={q.id}>
                             <span className="qa-label">Tu pregunta</span>
                             <p className="qa-bubble qa-bubble-q">
-                                {preguntaEnviada.texto}
+                                {q.texto}
                             </p>
 
                             <span className="qa-link" />
 
                             <span className="qa-label">Respuesta</span>
                             <p className="qa-bubble qa-bubble-a">
-                                {preguntaEnviada.respuesta || "Aún sin respuesta"}
+                                {q.respuesta || "Aún sin respuesta"}
                             </p>
                         </div>
-                    ) : (
+                    ))}
+
+                    {plantilla ? (
                         <form onSubmit={enviarMensaje}>
 
-                            <input
-                                type="text"
-                                placeholder="Escribe un mensaje anónimo..."
-                                value={texto}
-                                onChange={(e) => setTexto(e.target.value)}
-                                required
-                            />
+                            <p className="qa-label">{plantilla.texto.replace("___", "…")}</p>
+
+                            {plantilla.tipo === "tema" ? (
+                                <select
+                                    value={valor}
+                                    onChange={(e) => setValor(e.target.value)}
+                                    required
+                                >
+                                    <option value="" disabled>Elige una opción</option>
+                                    {plantilla.opciones.map((opcion) => (
+                                        <option key={opcion} value={opcion}>{opcion}</option>
+                                    ))}
+                                </select>
+                            ) : (
+                                <input
+                                    type="text"
+                                    maxLength={40}
+                                    placeholder="Una palabra o frase corta…"
+                                    value={valor}
+                                    onChange={(e) => setValor(e.target.value)}
+                                    required
+                                />
+                            )}
 
                             <Button disabled={enviando}>
                                 {enviando ? "Enviando…" : "Enviar mensaje"}
                             </Button>
 
                         </form>
-                    )}
+                    ) : enviadas.length === 0 ? (
+                        <p>Achuchando…</p>
+                    ) : null}
 
                 </Card>
 

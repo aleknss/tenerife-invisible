@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Activity, Users, Settings, Ban, UserPlus, Trash2, Pencil, KeyRound } from "lucide-react";
+import { Activity, Users, Settings, Ban, UserPlus, Trash2, Pencil, KeyRound, MessageCirclePlus } from "lucide-react";
 import Markdown from "@/components/Markdown/Markdown";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
@@ -212,6 +212,32 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
             }
 
             setMensaje(`Contraseña de ${p.nombre} actualizada`);
+        } catch (err) {
+            console.error("Error:", err);
+            setError("Error de conexión");
+        }
+    }
+
+    async function darPreguntaExtra(p) {
+
+        setMensaje("");
+        setError("");
+
+        try {
+            const res = await fetch("/api/admin/pregunta-extra", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ usuario_id: p.id })
+            });
+
+            const datos = await res.json().catch(() => ({}));
+
+            if (!res.ok) {
+                setError(datos.error ?? "No se pudo añadir la pregunta");
+                return;
+            }
+
+            setMensaje(`${p.nombre} tiene ahora ${datos.preguntas_extra} pregunta(s) extra`);
         } catch (err) {
             console.error("Error:", err);
             setError("Error de conexión");
@@ -543,6 +569,16 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
                                         title="Cambiar contraseña"
                                     >
                                         <KeyRound size={16} />
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        className="icon-btn neutral"
+                                        onClick={() => darPreguntaExtra(p)}
+                                        aria-label={`Añadir pregunta extra a ${p.nombre}`}
+                                        title="+1 pregunta"
+                                    >
+                                        <MessageCirclePlus size={16} />
                                     </button>
 
                                     <button

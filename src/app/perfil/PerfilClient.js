@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { User, KeyRound, Flag, MessageCircle, Heart, Ban, Shirt } from "lucide-react";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
@@ -24,8 +24,8 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
     const [actual, setActual] = useState("");
     const [nueva, setNueva] = useState("");
 
-    const [pregunta, setPregunta] = useState(preguntaInicial ?? null);
-    const [respuesta, setRespuesta] = useState("");
+    const [recibidas, setRecibidas] = useState(preguntaInicial ? [preguntaInicial] : []);
+    const [respuestas, setRespuestas] = useState({});
 
     const [estadoEvento] = useState(eventoInicial ?? null);
     const [guardando, setGuardando] = useState(false);
@@ -34,6 +34,29 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
 
     const [mensaje, setMensaje] = useState("");
     const [error, setError] = useState("");
+
+    useEffect(() => {
+        let activo = true;
+
+        (async () => {
+            try {
+                const res = await fetch("/api/me/pregunta");
+                if (!res.ok) {
+                    return;
+                }
+                const datos = await res.json();
+                if (activo) {
+                    setRecibidas(datos.recibidas ?? []);
+                }
+            } catch (err) {
+                console.error("Error:", err);
+            }
+        })();
+
+        return () => {
+            activo = false;
+        };
+    }, []);
 
     function cambiarHobby(index, valor) {
         setHobbies((prev) => prev.map((h, i) => (i === index ? valor : h)));
@@ -115,9 +138,11 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
         }
     }
 
-    async function responderPregunta(e) {
+    async function responderPregunta(e, q) {
 
         e.preventDefault();
+
+        const texto = respuestas[q.id] ?? "";
 
         setMensaje("");
         setError("");
@@ -128,7 +153,7 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
             const res = await fetch("/api/me/pregunta/respuesta", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ pregunta_id: pregunta?.id, respuesta })
+                body: JSON.stringify({ pregunta_id: q.id, respuesta: texto })
             });
 
             const datos = await res.json().catch(() => ({}));
@@ -138,8 +163,14 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
                 return;
             }
 
-            setPregunta((prev) => ({ ...prev, respuesta, respondida_at: new Date().toISOString() }));
-            setRespuesta("");
+            setRecibidas((prev) =>
+                prev.map((p) =>
+                    p.id === q.id
+                        ? { ...p, respuesta: texto, respondida_at: new Date().toISOString() }
+                        : p
+                )
+            );
+            setRespuestas((prev) => ({ ...prev, [q.id]: "" }));
             setMensaje("Respuesta enviada");
 
         } catch (err) {
@@ -222,47 +253,51 @@ export default function PerfilClient({ me, preguntaInicial, eventoInicial }) {
 
                     <h1><MessageCircle size={22} /> Pregunta del amigo invisible</h1>
 
-                    {pregunta === null ? (
+                    {recibidas.length === 0 ? (
                         <p>
                             De momento no te ha preguntado nada.
                         </p>
                     ) : (
-                        <>
-                            <div className="qa">
-                                <span className="qa-label">Pregunta</span>
-                                <p className="qa-bubble qa-bubble-q">
-                                    {pregunta.texto}
-                                </p>
+                        recibidas.map((q) => (
+                            <div key={q.id}>
+                                <div className="qa">
+                                    <span className="qa-label">Pregunta</span>
+                                    <p className="qa-bubble qa-bubble-q">
+                                        {q.texto}
+                                    </p>
 
-                                {pregunta.respondida_at && (
-                                    <>
-                                        <span className="qa-link" />
-                                        <span className="qa-label">Tu respuesta</span>
-                                        <p className="qa-bubble qa-bubble-a">
-                                            {pregunta.respuesta ?? respuesta}
-                                        </p>
-                                    </>
+                                    {q.respondida_at && (
+                                        <>
+                                            <span className="qa-link" />
+                                            <span className="qa-label">Tu respuesta</span>
+                                            <p className="qa-bubble qa-bubble-a">
+                                                {q.respuesta}
+                                            </p>
+                                        </>
+                                    )}
+                                </div>
+
+                                {!q.respondida_at && (
+                                    <form onSubmit={(e) => responderPregunta(e, q)}>
+
+                                        <input
+                                            type="text"
+                                            placeholder="Escribe tu respuesta"
+                                            value={respuestas[q.id] ?? ""}
+                                            onChange={(e) =>
+                                                setRespuestas((prev) => ({ ...prev, [q.id]: e.target.value }))
+                                            }
+                                            required
+                                        />
+
+                                        <Button disabled={respondiendo}>
+                                            {respondiendo ? "Enviando…" : "Enviar"}
+                                        </Button>
+
+                                    </form>
                                 )}
                             </div>
-
-                            {!pregunta.respondida_at && (
-                                <form onSubmit={responderPregunta}>
-
-                                    <input
-                                        type="text"
-                                        placeholder="Escribe tu respuesta"
-                                        value={respuesta}
-                                        onChange={(e) => setRespuesta(e.target.value)}
-                                        required
-                                    />
-
-                                    <Button disabled={respondiendo}>
-                                        {respondiendo ? "Enviando…" : "Enviar"}
-                                    </Button>
-
-                                </form>
-                            )}
-                        </>
+                        ))
                     )}
 
                 </Card>

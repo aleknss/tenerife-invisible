@@ -255,22 +255,26 @@ test("evento único: sorteo con veto + pregunta anónima", { skip }, async () =>
     assert.notEqual(asignadoDe.get(b.id), a.id, "veto violado b->a");
     assert.equal(new Set(asignadoDe.values()).size, todos.length, "receptores no únicos");
 
-    // pregunta anónima de a a su asignado
+    // pregunta anónima de a a su asignado (plantilla + hueco)
     const targetId = asignadoDe.get(a.id);
     const target = todos.find((u) => u.id === targetId);
+
+    const { plantilla } = (await api("/api/me/pregunta", { cookie: a.cookie })).data;
+    assert.ok(plantilla, "plantilla asignada");
+    const valor = plantilla.tipo === "tema" ? plantilla.opciones[0] : "mochila";
 
     const { res: qCreate } = await api("/api/me/pregunta", {
       method: "POST",
       cookie: a.cookie,
-      body: { texto: "¿Cuál es tu color favorito?" },
+      body: { plantilla_id: plantilla.id, valor },
     });
     assert.equal(qCreate.status, 200);
 
     const enviada = (await api("/api/me/pregunta", { cookie: a.cookie })).data.enviada;
-    assert.equal(enviada.texto, "¿Cuál es tu color favorito?");
+    assert.ok(enviada.texto && enviada.texto !== valor, "compone desde plantilla");
 
     const recibida = (await api("/api/me/pregunta", { cookie: target.cookie })).data.recibida;
-    assert.equal(recibida.texto, "¿Cuál es tu color favorito?");
+    assert.equal(recibida.texto, enviada.texto);
     assert.ok(!("autor_id" in recibida), "recibida filtra autor_id");
     assert.ok(!("nombre" in recibida), "recibida filtra nombre");
 
@@ -284,13 +288,50 @@ test("evento único: sorteo con veto + pregunta anónima", { skip }, async () =>
     const enviada2 = (await api("/api/me/pregunta", { cookie: a.cookie })).data.enviada;
     assert.equal(enviada2.respuesta, "Azul");
 
-    // segunda pregunta → 409
+    // segunda pregunta sin cuota extra → 409
     const { res: qAgain } = await api("/api/me/pregunta", {
       method: "POST",
       cookie: a.cookie,
-      body: { texto: "otra" },
+      body: { valor: "otra" },
     });
     assert.equal(qAgain.status, 409);
+
+    // admin concede +1 pregunta a a
+    const { res: extraRes, data: extraData } = await api("/api/admin/pregunta-extra", {
+      method: "POST",
+      cookie: adminCookie,
+      body: { usuario_id: a.id },
+    });
+    assert.equal(extraRes.status, 200);
+    assert.equal(extraData.preguntas_extra, 1);
+
+    const trasExtra = (await api("/api/me/pregunta", { cookie: a.cookie })).data;
+    assert.equal(trasExtra.restantes, 1);
+    assert.ok(trasExtra.plantilla, "plantilla para la extra");
+    assert.notEqual(trasExtra.plantilla.id, plantilla.id, "plantilla distinta");
+
+    const valorExtra =
+      trasExtra.plantilla.tipo === "tema"
+        ? trasExtra.plantilla.opciones[1]
+        : "linterna";
+
+    const { res: qExtra } = await api("/api/me/pregunta", {
+      method: "POST",
+      cookie: a.cookie,
+      body: { plantilla_id: trasExtra.plantilla.id, valor: valorExtra },
+    });
+    assert.equal(qExtra.status, 200);
+
+    const recibidasTarget = (await api("/api/me/pregunta", { cookie: target.cookie })).data.recibidas;
+    assert.equal(recibidasTarget.length, 2, "el receptor recibe las dos");
+
+    // tercera pregunta → 409
+    const { res: qTercera } = await api("/api/me/pregunta", {
+      method: "POST",
+      cookie: a.cookie,
+      body: { valor: "otra" },
+    });
+    assert.equal(qTercera.status, 409);
   } finally {
     const e2eIds = users.map((u) => u.id);
     if (e2eIds.length) {

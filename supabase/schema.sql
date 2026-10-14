@@ -26,6 +26,7 @@ alter table usuario alter column hobbies type jsonb
   end;
 alter table usuario add column if not exists tallas jsonb;
 alter table usuario add column if not exists palabra_vetada text;
+alter table usuario add column if not exists preguntas_extra integer not null default 0;
 
 -- Retirada de columnas legacy (opción A / sealed box).
 alter table usuario drop column if exists public_key;
@@ -88,7 +89,7 @@ create table if not exists veto (
   unique (a_id, b_id)
 );
 
--- Una pregunta por usuario, anónima para el receptor.
+-- Preguntas anónimas (una por defecto; el admin puede conceder extras).
 create table if not exists pregunta (
   id bigint generated always as identity primary key,
   autor_id uuid not null references usuario(id),
@@ -96,9 +97,10 @@ create table if not exists pregunta (
   texto text not null,
   respuesta text,
   respondida_at timestamptz,
-  created_at timestamptz not null default now(),
-  unique (autor_id)
+  created_at timestamptz not null default now()
 );
+
+alter table pregunta drop constraint if exists pregunta_autor_id_key;
 
 -- Historial de asignaciones (para "no repetir el año pasado").
 create table if not exists asignacion (

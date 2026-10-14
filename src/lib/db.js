@@ -206,7 +206,7 @@ export async function listParticipants() {
 export async function getUserState(id) {
   const { data, error } = await getSupabase()
     .from("usuario")
-    .select("asignado_id")
+    .select("asignado_id, preguntas_extra")
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
@@ -370,4 +370,48 @@ export async function responderPregunta(preguntaId, destinatarioId, respuesta) {
     .maybeSingle();
   if (error) throw error;
   return data;
+}
+
+export async function getPreguntasEnviadas(autorId) {
+  const { data, error } = await getSupabase()
+    .from("pregunta")
+    .select("id, texto, respuesta, respondida_at")
+    .eq("autor_id", autorId)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
+export async function getPreguntasRecibidas(destinatarioId) {
+  const { data, error } = await getSupabase()
+    .from("pregunta")
+    .select("id, texto, respuesta, respondida_at")
+    .eq("destinatario_id", destinatarioId)
+    .order("created_at", { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
+export async function countPreguntasEnviadas(autorId) {
+  const { count, error } = await getSupabase()
+    .from("pregunta")
+    .select("id", { count: "exact", head: true })
+    .eq("autor_id", autorId);
+  if (error) throw error;
+  return count ?? 0;
+}
+
+export async function addPreguntaExtra(id) {
+  const { data: u } = await getSupabase()
+    .from("usuario")
+    .select("preguntas_extra")
+    .eq("id", id)
+    .maybeSingle();
+  const preguntas_extra = (u?.preguntas_extra ?? 0) + 1;
+  const { error } = await getSupabase()
+    .from("usuario")
+    .update({ preguntas_extra })
+    .eq("id", id);
+  if (error) throw error;
+  return preguntas_extra;
 }

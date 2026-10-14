@@ -5,7 +5,7 @@ Documento para developers. Describe arquitectura, modelo de datos, API y una gu�
 ## Decisiones de diseño (cerradas)
 
 - **Evento único**: toda la app es un evento; una fila `config` (id=1).
-- **Pregunta anónima**: el receptor no ve el autor; el admin **no tiene endpoint** para ver preguntas ni respuestas (solo acceso directo a BD). Cada participante ve solo las suyas.
+- **Pregunta anónima**: el receptor no ve el autor; el admin **no tiene endpoint** para ver preguntas ni respuestas (solo acceso directo a BD). Cada participante ve solo las suyas. La pregunta se compone de una **plantilla asignada por hash del usuario** + un hueco acotado (dropdown de tema o texto corto filtrado), para no delatar al autor por estilo.
 - **Realtime = polling** (2-3 s) sobre `GET /api/estado`.
 - **Tallas fijas**: `camiseta`, `pantalon`, `zapato`, `gorro`, `guantes` (jsonb libre, la UI decide las claves).
 - **Vetos solo admin** (no hay auto-veto del usuario).
@@ -65,6 +65,7 @@ El admin se crea con `npm run seed` usando `ADMIN_NOMBRE`/`ADMIN_PASSWORD`. La c
 | `hobbies` | text | Intereses, texto libre |
 | `tallas` | jsonb | `{ camiseta, pantalon, zapato, gorro, guantes }` |
 | `palabra_vetada` | text | Objeto no deseado |
+| `preguntas_extra` | integer | Preguntas extra concedidas por el admin (default 0) |
 | `viewed_at` | timestamptz | null hasta que ve la animación |
 | `token_version` | integer | Subirla revoca las sesiones |
 | `created_at` | timestamptz | Alta |
@@ -87,7 +88,7 @@ El admin se crea con `npm run seed` usando `ADMIN_NOMBRE`/`ADMIN_PASSWORD`. La c
 ### Tablas auxiliares
 
 - `veto` — parejas vetadas (`a_id`, `b_id`, normalizadas `a_id < b_id`, `unique(a_id, b_id)`).
-- `pregunta` — una pregunta por usuario (`unique(autor_id)`), anónima para el receptor: `autor_id`, `destinatario_id`, `texto`, `respuesta`, `respondida_at`.
+- `pregunta` — anónima para el receptor (una por usuario + las extra que conceda el admin): `autor_id`, `destinatario_id`, `texto`, `respuesta`, `respondida_at`.
 - `asignacion` — historial de sorteos por año (`anio`, `dador_id`, `receptor_id`, `unique(anio, dador_id)`, `unique(anio, receptor_id)`). Sirve para "no repetir el año pasado".
 - `login_attempt` — intentos de login fallidos para el rate limit; índice `(nombre, ip, created_at)`.
 
@@ -117,7 +118,7 @@ Funciones:
 - `getPrevios(anio)` — asignaciones de un año, para evitar repetir.
 - `applySorteo(mapping, anio)` — escribe `asignado_id` por fila y guarda historial en `asignacion`.
 - `getReceptorProfile(dadorId)` — perfil del receptor + `viewed_at` del dador.
-- `getPreguntaEnviada` / `getPreguntaRecibida` / `createPregunta` / `responderPregunta` — preguntas anónimas.
+- `getPreguntasEnviadas` / `getPreguntasRecibidas` / `countPreguntasEnviadas` / `createPregunta` / `responderPregunta` / `addPreguntaExtra` — preguntas anónimas (una + extras).
 
 ### ⚠️ `applySorteo` no es atómico
 
@@ -152,8 +153,9 @@ Todas verifican JWT con `getSession`, salvo `login`. El permiso admin se comprue
 | `/api/me/password` | POST | autenticado | Cambia contraseña (verifica actual, sube `token_version`, re-firma sesión) |
 | `/api/me/asignado` | GET | autenticado | Perfil del receptor (`nombre`, `hobbies`, `tallas`, `palabra_vetada`) + `viewed_at` |
 | `/api/me/viewed` | POST | autenticado | Marca `viewed_at` |
-| `/api/me/pregunta` | GET / POST | autenticado | GET: enviada + recibida. POST: crea pregunta (una por autor, requiere `sorteado` y tener asignado) |
+| `/api/me/pregunta` | GET / POST | autenticado | GET: enviada + recibida + plantilla. POST: crea pregunta desde plantilla (una por autor, requiere `sorteado` y tener asignado) |
 | `/api/me/pregunta/respuesta` | POST | autenticado | Responde una pregunta recibida |
+| `/api/admin/pregunta-extra` | POST | admin | Concede +1 pregunta a un usuario (`{ usuario_id }`) |
 | `/api/users` | GET | autenticado | Lista `id` + `nombre` |
 | `/api/users` | POST | admin | Crea usuario; 400 si `role` inválido; 409 si nombre existe |
 | `/api/estado` | GET | autenticado | `{ estado, total, tengo_asignado }` |
@@ -186,8 +188,8 @@ Todas verifican JWT con `getSession`, salvo `login`. El permiso admin se comprue
 - `PATCH /api/me/form` `{ hobbies?, tallas?, palabra_vetada? }`. `tallas` = objeto `{ camiseta, pantalon, zapato, gorro, guantes }`.
 - `GET /api/me/asignado` → `{ asignado: { id, nombre, hobbies, tallas, palabra_vetada } | null, viewed_at }`.
 - `POST /api/me/viewed` → marcar animación vista.
-- `GET /api/me/pregunta` → `{ enviada, recibida }`.
-- `POST /api/me/pregunta` `{ texto }` (una sola; `409` si ya envió o no tiene asignado).
+- `GET /api/me/pregunta` → `{ enviadas, recibidas, enviada, recibida, restantes, plantilla }`.
+- `POST /api/me/pregunta` `{ plantilla_id, valor }` (mientras queden `restantes`; `409` si agotó la cuota o no tiene asignado).
 - `POST /api/me/pregunta/respuesta` `{ pregunta_id, respuesta }`.
 - `POST /api/me/password` `{ actual, nueva }`.
 - `POST /api/logout`.
@@ -200,6 +202,7 @@ Todas verifican JWT con `getSession`, salvo `login`. El permiso admin se comprue
 - `GET /api/admin/vetos` → `[[a_id, b_id], ...]`.
 - `POST /api/admin/vetos` `{ a_id, b_id }`; `DELETE /api/admin/vetos` `{ a_id, b_id }`.
 - `POST /api/admin/sortear` → `200 { ok }` o `400 { error, bloqueado }` (vetos imposibles).
+- `POST /api/admin/pregunta-extra` `{ usuario_id }` → concede +1 pregunta.
 - `GET /api/estado` → estado global del evento.
 
 ### Formas de datos (shapes)
@@ -213,8 +216,11 @@ GET /api/me/asignado
 
 GET /api/me/pregunta
 {
-  enviada: { id, texto, respuesta, respondida_at } | null,
-  recibida: { id, texto, respondida_at } | null
+  enviadas: [{ id, texto, respuesta, respondida_at }],
+  recibidas: [{ id, texto, respondida_at }],
+  enviada, recibida,           // compatibilidad (primera o null)
+  restantes,                   // preguntas que puede enviar todavía
+  plantilla: { id, tipo, texto, opciones } | null
 }
 
 GET /api/config
@@ -261,6 +267,7 @@ GET /api/config
 - Configurar el evento (`PATCH /api/config`).
 - Gestionar vetos.
 - Sortear / re-sortear.
+- Conceder preguntas extra (`POST /api/admin/pregunta-extra`).
 - Ver estado global.
 
 ## Pendiente

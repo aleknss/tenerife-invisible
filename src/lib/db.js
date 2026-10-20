@@ -328,6 +328,8 @@ export async function getPreguntaEnviada(autorId) {
     .from("pregunta")
     .select("id, texto, respuesta, respondida_at")
     .eq("autor_id", autorId)
+    .order("created_at", { ascending: true })
+    .limit(1)
     .maybeSingle();
   if (error) throw error;
   return data;
@@ -338,6 +340,8 @@ export async function getPreguntaRecibida(destinatarioId) {
     .from("pregunta")
     .select("id, texto, respuesta, respondida_at")
     .eq("destinatario_id", destinatarioId)
+    .order("created_at", { ascending: true })
+    .limit(1)
     .maybeSingle();
   if (error) throw error;
   return data;

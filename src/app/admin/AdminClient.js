@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Activity, Users, Settings, Ban, UserPlus, Trash2, Pencil, KeyRound, MessageCirclePlus } from "lucide-react";
+import { Activity, Users, Settings, Ban, UserPlus, Trash2, Pencil, KeyRound } from "lucide-react";
 import Markdown from "@/components/Markdown/Markdown";
 import Card from "@/components/Card/Card";
 import Button from "@/components/Button/Button";
@@ -218,7 +218,21 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
         }
     }
 
-    async function darPreguntaExtra(p) {
+    async function darPreguntaExtra(p, destino) {
+
+        const destinatario =
+            destino === "amigo" ? `el chacho invisible de ${p.nombre}` : p.nombre;
+
+        if (!window.confirm(`¿Añadir una pregunta extra a ${destinatario}?`)) {
+            return;
+        }
+        if (
+            !window.confirm(
+                `¿Seguro? ${destinatario} tendrá una pregunta más y esta acción no se puede deshacer.`
+            )
+        ) {
+            return;
+        }
 
         setMensaje("");
         setError("");
@@ -227,7 +241,7 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
             const res = await fetch("/api/admin/pregunta-extra", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ usuario_id: p.id })
+                body: JSON.stringify({ usuario_id: p.id, destino })
             });
 
             const datos = await res.json().catch(() => ({}));
@@ -237,7 +251,8 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
                 return;
             }
 
-            setMensaje(`${p.nombre} tiene ahora ${datos.preguntas_extra} pregunta(s) extra`);
+            const nombre = datos.nombre ?? p.nombre;
+            setMensaje(`${nombre} tiene ahora ${datos.preguntas_extra} pregunta(s) extra`);
         } catch (err) {
             console.error("Error:", err);
             setError("Error de conexión");
@@ -571,15 +586,17 @@ export default function AdminClient({ participantesIniciales, estadoInicial, con
                                         <KeyRound size={16} />
                                     </button>
 
-                                    <button
-                                        type="button"
+                                    <select
                                         className="icon-btn neutral"
-                                        onClick={() => darPreguntaExtra(p)}
-                                        aria-label={`Añadir pregunta extra a ${p.nombre}`}
+                                        value=""
+                                        onChange={(e) => darPreguntaExtra(p, e.target.value)}
+                                        aria-label={`Añadir pregunta extra a ${p.nombre} o a su chacho invisible`}
                                         title="+1 pregunta"
                                     >
-                                        <MessageCirclePlus size={16} />
-                                    </button>
+                                        <option value="" disabled>+1 pregunta</option>
+                                        <option value="persona">A {p.nombre}</option>
+                                        <option value="amigo">A su chacho invisible</option>
+                                    </select>
 
                                     <button
                                         type="button"
